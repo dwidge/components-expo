@@ -28,3 +28,4 @@ export const StyledHeader = ({
     }
   />
 );
+export type StyledHeaderProps = Parameters<typeof StyledHeader>[0];
