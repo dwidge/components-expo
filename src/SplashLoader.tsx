@@ -5,7 +5,7 @@
 import { SplashScreen } from "expo-router";
 import { PropsWithChildren, useEffect } from "react";
 
-export const SplashLoader = ({ children }: PropsWithChildren) => {
+export const SplashLoader = ({ children }: PropsWithChildren): JSX.Element => {
   useEffect(() => {
     defer3().then(SplashScreen.hideAsync);
   }, []);
