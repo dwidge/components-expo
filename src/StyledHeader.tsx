@@ -12,14 +12,10 @@ import { Gap } from "@dwidge/components-rnw";
 export const StyledHeader = ({
   title = "",
   actions = Array<IconButtonProps | false>(),
-  back = true,
-  navigation = useNavigation(),
+  back = useNavigation().up as (() => void) | undefined,
 }) => (
   <AlignedView
-    left={
-      back &&
-      navigation.up && <IconButton icon="arrow-back" onPress={navigation.up} />
-    }
+    left={back && <IconButton icon="arrow-back" onPress={back} />}
     center={
       <StyledText center bold uppercase>
         {title}
