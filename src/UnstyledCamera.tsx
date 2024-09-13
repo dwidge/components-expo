@@ -64,7 +64,7 @@ export const UnstyledCamera = ({
           setType((current) => {
             const nextIndex = (types.indexOf(current) + 1) % types.length;
             const nextType = types[nextIndex];
-            assert(nextType);
+            assert.ok(nextType);
             return nextType;
           });
 

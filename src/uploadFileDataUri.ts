@@ -39,7 +39,7 @@ export const uploadFileDataUri = async (
       },
     });
     const getUri = await fetchFileDataUri(getUrl, putBuffer, axios);
-    assert(getUri, "uploadFileDataUriE7");
+    assert.ok(getUri, "uploadFileDataUriE7");
     const getBuffer = getBufferFromUri(getUri);
     assert.strictEqual(getBuffer.byteLength, size, "uploadFileDataUriE4");
     assert.strictEqual(getMimeFromUri(getUri), mime, "uploadFileDataUriE5");
@@ -78,11 +78,11 @@ export const fetchFileDataUri = async (
     .then(async (response) => {
       const buffer = Buffer.from(response.data);
       if (!buffer) throw new Error("fetchFileDataUriE1", { cause: response });
-      if (putBuffer) assert(putBuffer.equals(buffer), "fetchFileDataUriE2");
+      if (putBuffer) assert.ok(putBuffer.equals(buffer), "fetchFileDataUriE2");
       const mime =
         response.headers["content-type"] || "application/octet-stream";
       const data = await getBase64FromBuffer(buffer);
-      assert(getBufferFromBase64(data).equals(buffer), "fetchFileDataUriE3");
+      assert.ok(getBufferFromBase64(data).equals(buffer), "fetchFileDataUriE3");
       return getUriFromDoc({ data, mime });
     })
     .catch((e) => {

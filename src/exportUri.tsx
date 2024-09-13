@@ -24,7 +24,7 @@ export async function exportUri(dataUri: string, name: string) {
   } else {
     const tempFilePath = FileSystem.documentDirectory + name;
     const base64Code = dataUri.split(",")[1];
-    assert(base64Code);
+    assert.ok(base64Code);
     await FileSystem.writeAsStringAsync(tempFilePath, base64Code, {
       encoding: FileSystem.EncodingType.Base64,
     }).catch((e) => {
