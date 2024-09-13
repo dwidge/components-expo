@@ -4,7 +4,7 @@
 
 import { ContextError } from "@dwidge/components-rnw";
 import * as assert from "assert";
-import Axios from "axios";
+import Axios, { isAxiosError } from "axios";
 import { Buffer } from "buffer";
 import {
   getBase64FromBuffer,
@@ -59,7 +59,7 @@ export const uploadFileDataUri = async (
         hash,
         getUrl,
         message: e.message,
-        axios: e instanceof axios.prototype.AxiosError && {
+        axios: isAxiosError(e) && {
           response: e.response,
         },
       },
@@ -86,15 +86,14 @@ export const fetchFileDataUri = async (
       return getUriFromDoc({ data, mime });
     })
     .catch((e) => {
-      if (e instanceof axios.prototype.AxiosError && e.response?.status === 404)
-        return null;
+      if (isAxiosError(e) && e.response?.status === 404) return null;
       else
         throw new ContextError("fetchFileDataUriE", {
           cause: e,
           context: {
             getUrl,
             message: e.message,
-            axios: e instanceof axios.prototype.AxiosError && {
+            axios: isAxiosError(e) && {
               response: e.response,
             },
           },
