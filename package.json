@@ -1,6 +1,8 @@
 {
   "name": "@dwidge/components-expo",
   "version": "0.0.6",
+  "description": "A collection of Expo components and utilities.",
+  "repository": "github:dwidge/components-expo",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
   "types": "./dist/types/index.d.ts",
@@ -49,5 +51,9 @@
   },
   "publishConfig": {
     "access": "public"
+  },
+  "packageManager": "pnpm@9.7.1",
+  "engines": {
+    "node": ">=20"
   }
 }
