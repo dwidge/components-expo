@@ -1,4 +1,8 @@
-name: NPM Publish
+# Copyright DWJ 2024.
+# Distributed under the Boost Software License, Version 1.0.
+# https://www.boost.org/LICENSE_1_0.txt
+
+name: Publish
 
 on:
   workflow_dispatch:
@@ -8,9 +12,13 @@ on:
 
 jobs:
   publish:
+    timeout-minutes: 2
     runs-on: ubuntu-latest
     permissions:
       packages: write
+      contents: read
+    env:
+      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -19,8 +27,4 @@ jobs:
           cache: "pnpm"
           node-version-file: "package.json"
       - run: pnpm install
-      - run: pnpm test
-      - uses: JS-DevTools/npm-publish@v3
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          registry: "https://npm.pkg.github.com"
+      - run: pnpm publish
