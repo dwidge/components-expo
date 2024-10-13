@@ -1,6 +1,6 @@
 {
   "name": "@dwidge/components-expo",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "A collection of Expo components and utilities.",
   "repository": "github:dwidge/components-expo",
   "main": "./dist/cjs/index.js",
@@ -14,7 +14,7 @@
     }
   },
   "files": [
-    "dist/*/",
+    "dist",
     "src"
   ],
   "scripts": {
