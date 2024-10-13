@@ -3,9 +3,9 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 import { SplashScreen } from "expo-router";
-import { PropsWithChildren, useEffect } from "react";
+import { PropsWithChildren, ReactNode, useEffect } from "react";
 
-export const SplashLoader = ({ children }: PropsWithChildren): JSX.Element => {
+export const SplashLoader = ({ children }: PropsWithChildren): ReactNode => {
   useEffect(() => {
     defer3().then(SplashScreen.hideAsync);
   }, []);
