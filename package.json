@@ -1,6 +1,6 @@
 {
   "name": "@dwidge/components-expo",
-  "version": "0.0.8",
+  "version": "0.0.10",
   "description": "A collection of Expo components and utilities.",
   "repository": "github:dwidge/components-expo",
   "main": "./dist/cjs/index.js",
@@ -21,12 +21,12 @@
     "prepare": "rimraf dist && ncp assets/ dist/ && tsc -b . tsconfig.cjs.json tsconfig.test.json",
     "test": "node --enable-source-maps --test --test-name-pattern"
   },
-  "dependencies": {
-    "@dwidge/components-rnw": "^0.0.4",
-    "@dwidge/hooks-expo": "^0.0.1",
-    "@dwidge/hooks-react": "^0.0.1",
-    "@dwidge/utils-js": "^0.0.5",
-    "@rneui/themed": "4.0.0-rc.8",
+  "peerDependencies": {
+    "@dwidge/components-rnw": "^0.0.6",
+    "@dwidge/hooks-expo": "^0.0.5",
+    "@dwidge/hooks-react": "^0.0.3",
+    "@dwidge/utils-js": "^0.0.11",
+    "@rneui/themed": "^4.0.0-rc.8",
     "assert": "^2.1.0",
     "axios": "^1.7.7",
     "expo-av": "^14.0.7",
@@ -39,8 +39,8 @@
     "expo-linking": "^6.3.1",
     "expo-router": "^3.5.23",
     "expo-sharing": "^12.0.1",
-    "react": "^18.3.1",
-    "react-native": "^0.75.4",
+    "react": "^18.2.0",
+    "react-native": "^0.74.5",
     "zod": "^3.23.8"
   },
   "devDependencies": {
