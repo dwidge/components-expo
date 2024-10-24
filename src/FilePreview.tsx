@@ -2,7 +2,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-import { StyledLoader } from "@dwidge/components-rnw";
+import { CenterView, StyledLoader, StyledText } from "@dwidge/components-rnw";
 import { getFontAwesomeGlyphFromMime } from "@dwidge/components-rnw";
 import { Image } from "@rneui/themed";
 import { getMimeFromUri } from "./uri";
@@ -18,24 +18,36 @@ export const FilePreview = ({
   dataUriCache: [dataUriCache, setDataUriCache] = useDataUriCache(dataUri),
 }): JSX.Element =>
   dataUriCache === "" ? (
-    <StyledFontAwesome name={"warning"} />
+    <CenterView overflowHidden>
+      <StyledFontAwesome name={"warning"} />
+    </CenterView>
   ) : dataUriCache === undefined ? (
-    <StyledLoader />
+    <CenterView overflowHidden>
+      <StyledLoader />
+    </CenterView>
   ) : dataUriCache === null ? (
-    <StyledFontAwesome name={"upload"} />
+    <CenterView overflowHidden>
+      <StyledFontAwesome name={"upload"} />
+    </CenterView>
   ) : getMimeFromUri(dataUriCache).includes("image") ? (
     <Image
-      style={{ width: 120, height: 120 }}
+      containerStyle={{ flex: 1 }}
+      style={{
+        flex: 1,
+        resizeMode: "contain",
+      }}
       source={{ uri: dataUriCache }}
       onError={(e) => (
         console.log("FilePreviewE1", e.nativeEvent.error),
         setDataUriCache?.(() => "")
       )}
-      onPress={() => Linking.openURL(dataUriCache)}
+      // onPress={() => Linking.openURL(dataUriCache)}
     />
   ) : (
-    <StyledFontAwesome
-      name={getFontAwesomeGlyphFromMime(getMimeFromUri(dataUriCache))}
-      onPress={() => Linking.openURL(dataUriCache)}
-    />
+    <CenterView overflowHidden>
+      <StyledFontAwesome
+        name={getFontAwesomeGlyphFromMime(getMimeFromUri(dataUriCache))}
+        // onPress={() => Linking.openURL(dataUriCache)}
+      />
+    </CenterView>
   );

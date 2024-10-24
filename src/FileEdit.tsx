@@ -14,8 +14,9 @@ import { getMediaFromCamera } from "./getMediaFromLibrary";
 import { pickDocument } from "./pickDocument";
 import { StyledDate } from "./StyledDate";
 import { getMimeFromUri, getUriFromDoc } from "./uri";
-import { UseFile2 } from "./UseFile2";
+import { File2Get, UseFile2 } from "./UseFile2";
 import { useFileUri } from "./useFileUri";
+import { Platform, TouchableOpacity } from "react-native";
 
 /**
  * React Native Expo component that allows viewing, updating, and downloading an uploaded file.
@@ -34,73 +35,124 @@ import { useFileUri } from "./useFileUri";
  * @param {Function} props.file[1] - The setter function to update the file object.
  */
 
+const optional = <T,>(a: T) => a as T | undefined;
+
 export const FileEdit = ({
   file: [file, setFile] = [undefined, undefined] as UseFile2,
   fileUri: [fileUri, setFileUri, isUploading] = useFileUri([file, setFile]),
-}): JSX.Element => {
-  const handlePickFile = setFileUri
+  onPressCreate = optional(
+    async (): Promise<{ id: string } | null | undefined> => {
+      console.log("onPressCreate1");
+      return undefined;
+    },
+  ),
+  onPressDelete = optional(async () => {
+    console.log("onPressDelete1");
+  }),
+  onPressPreview = optional(async () => {
+    console.log("onPressPreview1");
+  }),
+  onPressOpen = setFileUri
     ? async () => {
         const doc = await pickDocument();
         if (doc) await setFileUri(getUriFromDoc(doc), doc?.mime);
       }
-    : undefined;
-
-  const handlePickMedia = setFileUri
+    : undefined,
+  onPressCamera = Platform.OS !== "web" && setFileUri
     ? async () => {
         const image = (await getMediaFromCamera())[0];
         if (image) await setFileUri(image?.uri, image.mimeType ?? "");
       }
-    : undefined;
-
-  const handleDownloadFile = fileUri
+    : undefined,
+  onPressSave = fileUri
     ? () =>
         exportUri(fileUri, getMimeFromUri(fileUri)?.replace("/", ".") ?? "file")
-    : undefined;
-
-  return (
-    <StyledView flex card column>
-      {file ? (
-        <StyledView flex column gap overflowHidden>
-          <StyledView flex row gap wrap>
-            <StyledView center middle mediumSquare outline overflowHidden>
+    : undefined,
+}): JSX.Element => (
+  <StyledView flex card column>
+    {file === null ? (
+      <StyledView sgap row>
+        {onPressCreate && (
+          <StyledButton
+            containerStyle={{ flex: 1 }}
+            onPress={() => onPressCreate()}
+            loading={isUploading}
+            icon="create"
+          />
+        )}
+        {onPressCreate && onPressOpen && (
+          <StyledButton
+            containerStyle={{ flex: 1 }}
+            onPress={() => onPressCreate().then(onPressOpen)}
+            loading={isUploading}
+            icon="folder-open"
+          />
+        )}
+        {onPressCreate && onPressCamera && (
+          <StyledButton
+            containerStyle={{ flex: 1 }}
+            onPress={() => onPressCreate().then(onPressCamera)}
+            loading={isUploading}
+            icon="camera"
+          />
+        )}
+      </StyledView>
+    ) : file ? (
+      <StyledView flex row gap overflowHidden>
+        <StyledView flex row gap>
+          <StyledView style={{ minWidth: 120, minHeight: 120 }}>
+            <TouchableOpacity style={{ flex: 1 }} onPress={onPressPreview}>
               <FilePreview dataUri={fileUri} />
-            </StyledView>
-            <StyledView flex3 sgap minWidth>
-              {file.createdBy != null && (
-                <StyledText>Author: {file.createdBy}</StyledText>
-              )}
-              {file.createdAt != null && (
-                <StyledDate>{file.createdAt * 1000}</StyledDate>
-              )}
-              {file.size != null && (
-                <StyledText>{(file.size / 1024) | 0} KB</StyledText>
-              )}
-              {file.mime != null && <StyledText>{file.mime}</StyledText>}
-            </StyledView>
+            </TouchableOpacity>
           </StyledView>
-          <StyledView sgap row>
-            <StyledButton
-              containerStyle={{ flex: 1 }}
-              title="Export"
-              onPress={handleDownloadFile}
-            />
-            <StyledButton
-              containerStyle={{ flex: 1 }}
-              title="Import"
-              onPress={handlePickFile}
-              loading={isUploading}
-            />
-            <StyledButton
-              containerStyle={{ flex: 1 }}
-              title="Camera"
-              onPress={handlePickMedia}
-              loading={isUploading}
-            />
-          </StyledView>
+          <FileDetails file={file} />
         </StyledView>
-      ) : (
-        <StyledLoader />
-      )}
-    </StyledView>
-  );
-};
+        <StyledView sgap column>
+          {onPressDelete && (
+            <StyledButton
+              containerStyle={{ flex: 1 }}
+              onPress={onPressDelete}
+              icon="trash-bin"
+            />
+          )}
+          {onPressSave && (
+            <StyledButton
+              containerStyle={{ flex: 1 }}
+              onPress={onPressSave}
+              icon="save"
+            />
+          )}
+          {onPressOpen && (
+            <StyledButton
+              containerStyle={{ flex: 1 }}
+              onPress={onPressOpen}
+              loading={isUploading}
+              icon="folder-open"
+            />
+          )}
+          {onPressCamera && (
+            <StyledButton
+              containerStyle={{ flex: 1 }}
+              onPress={onPressCamera}
+              loading={isUploading}
+              icon="camera"
+            />
+          )}
+        </StyledView>
+      </StyledView>
+    ) : (
+      <StyledLoader />
+    )}
+  </StyledView>
+);
+
+const FileDetails = ({ file = {} as File2Get }) => (
+  <StyledView flex3 sgap>
+    {/* {file.createdBy != null && (
+      <StyledText>Author: {file.createdBy}</StyledText>
+    )} */}
+    {file.createdAt != null && <StyledDate>{file.createdAt * 1000}</StyledDate>}
+    {file.size != null && <StyledText>{(file.size / 1024) | 0} KB</StyledText>}
+    {file.mime != null && <StyledText>{file.mime}</StyledText>}
+  </StyledView>
+);
