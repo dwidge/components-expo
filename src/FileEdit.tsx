@@ -8,15 +8,18 @@ import {
   StyledText,
   StyledView,
 } from "@dwidge/components-rnw";
+import { useState } from "react";
+import { Platform, TouchableOpacity } from "react-native";
 import { exportUri } from "./exportUri";
 import { FilePreview } from "./FilePreview";
+import { FilePreviewModal } from "./FilePreviewModal";
 import { getMediaFromCamera } from "./getMediaFromLibrary";
+import { optional } from "./optional";
 import { pickDocument } from "./pickDocument";
 import { StyledDate } from "./StyledDate";
 import { getMimeFromUri, getUriFromDoc } from "./uri";
 import { File2Get, UseFile2 } from "./UseFile2";
 import { useFileUri } from "./useFileUri";
-import { Platform, TouchableOpacity } from "react-native";
 
 /**
  * React Native Expo component that allows viewing, updating, and downloading an uploaded file.
@@ -35,8 +38,6 @@ import { Platform, TouchableOpacity } from "react-native";
  * @param {Function} props.file[1] - The setter function to update the file object.
  */
 
-const optional = <T,>(a: T) => a as T | undefined;
-
 export const FileEdit = ({
   file: [file, setFile] = [undefined, undefined] as UseFile2,
   fileUri: [fileUri, setFileUri, isUploading] = useFileUri([file, setFile]),
@@ -48,9 +49,6 @@ export const FileEdit = ({
   ),
   onPressDelete = optional(async () => {
     console.log("onPressDelete1");
-  }),
-  onPressPreview = optional(async () => {
-    console.log("onPressPreview1");
   }),
   onPressOpen = setFileUri
     ? async () => {
@@ -68,9 +66,15 @@ export const FileEdit = ({
     ? () =>
         exportUri(fileUri, getMimeFromUri(fileUri)?.replace("/", ".") ?? "file")
     : undefined,
+  isModalVisible: [isModalVisible, setModalVisible] = useState(false),
+  onPressPreview = optional(async () => {
+    setModalVisible(true);
+  }),
 }): JSX.Element => (
   <StyledView flex card column>
-    {file === null ? (
+    {file === undefined ? (
+      <StyledLoader />
+    ) : file === null || !file.id ? (
       <StyledView sgap row>
         {onPressCreate && (
           <StyledButton
@@ -97,7 +101,7 @@ export const FileEdit = ({
           />
         )}
       </StyledView>
-    ) : file ? (
+    ) : (
       <StyledView flex row gap overflowHidden>
         <StyledView flex row gap>
           <StyledView style={{ minWidth: 120, minHeight: 120 }}>
@@ -140,9 +144,12 @@ export const FileEdit = ({
           )}
         </StyledView>
       </StyledView>
-    ) : (
-      <StyledLoader />
     )}
+
+    <FilePreviewModal
+      visible={[isModalVisible, setModalVisible]}
+      dataUri={fileUri}
+    />
   </StyledView>
 );
 
