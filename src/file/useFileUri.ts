@@ -3,15 +3,15 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 import { useEffect, useState } from "react";
-import { compressImage } from "./compressImage";
+import { compressImage } from "../compressImage";
 import { fetchFileDataUri, uploadFileDataUri } from "./uploadFileDataUri";
-import { getDocFromUri, getMimeFromUri, getSizeFromUri } from "./uri";
-import { useAxios } from "./useAxios";
-import { UseFile2 } from "./UseFile2";
+import { getDocFromUri, getMimeFromUri, getSizeFromUri } from "../uri";
+import { useAxios } from "../useAxios";
+import { UseFile2 } from "./FileType";
 
 export const useFileUri = (
   [file, setFile]: UseFile2,
-  axios = useAxios()
+  axios = useAxios(),
 ): [
   (null | string)?,
   ((uri: null | string, mime: string) => Promise<void>)?,
@@ -51,7 +51,7 @@ export const useFileUri = (
           mime,
           sha256,
           getUrl,
-          axios
+          axios,
         ).then(() => {
           setUploaded(true);
           setIsUploading(false);

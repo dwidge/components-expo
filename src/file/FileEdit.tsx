@@ -10,16 +10,16 @@ import {
 } from "@dwidge/components-rnw";
 import { useState } from "react";
 import { Platform, TouchableOpacity } from "react-native";
-import { exportUri } from "./exportUri";
+import { exportUri } from "../exportUri";
 import { FilePreview } from "./FilePreview";
 import { FilePreviewModal } from "./FilePreviewModal";
-import { getMediaFromCamera } from "./getMediaFromLibrary";
-import { optional } from "./optional";
-import { pickDocument } from "./pickDocument";
-import { StyledDate } from "./StyledDate";
-import { getMimeFromUri, getUriFromDoc } from "./uri";
-import { File2Get, UseFile2 } from "./UseFile2";
-import { useFileUri } from "./useFileUri";
+import { getMediaFromCamera } from "../getMediaFromLibrary";
+import { optional } from "../utils/optional";
+import { pickDocument } from "../pickDocument";
+import { StyledDate } from "../StyledDate";
+import { getMimeFromUri, getUriFromDoc } from "../uri";
+import { useFileUri } from "./useFileUri.js";
+import { File2Get, UseFile2 } from "./FileType.js";
 
 /**
  * React Native Expo component that allows viewing, updating, and downloading an uploaded file.
@@ -104,7 +104,7 @@ export const FileEdit = ({
     ) : (
       <StyledView flex row gap overflowHidden>
         <StyledView flex row gap>
-          <StyledView style={{ minWidth: 120, minHeight: 120 }}>
+          <StyledView mediumSquare>
             <TouchableOpacity style={{ flex: 1 }} onPress={onPressPreview}>
               <FilePreview dataUri={fileUri} />
             </TouchableOpacity>

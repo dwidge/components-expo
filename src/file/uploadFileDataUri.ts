@@ -13,7 +13,7 @@ import {
   getMimeFromUri,
   getSha256HexFromBuffer,
   getUriFromDoc,
-} from "./uri";
+} from "../uri";
 
 export const uploadFileDataUri = async (
   putUrl: string,
@@ -22,7 +22,7 @@ export const uploadFileDataUri = async (
   mime: string,
   hash: string,
   getUrl: string,
-  axios = Axios.create()
+  axios = Axios.create(),
 ) =>
   (async () => {
     const putBuffer = getBufferFromUri(uri);
@@ -31,7 +31,7 @@ export const uploadFileDataUri = async (
     assert.strictEqual(
       await getSha256HexFromBuffer(putBuffer),
       hash,
-      "uploadFileDataUriE3"
+      "uploadFileDataUriE3",
     );
     await axios.put(putUrl, putBuffer, {
       headers: {
@@ -46,7 +46,7 @@ export const uploadFileDataUri = async (
     assert.strictEqual(
       await getSha256HexFromBuffer(getBuffer),
       hash,
-      "uploadFileDataUriE6"
+      "uploadFileDataUriE6",
     );
   })().catch((e) => {
     throw new ContextError("uploadFileDataUriE", {
@@ -69,7 +69,7 @@ export const uploadFileDataUri = async (
 export const fetchFileDataUri = async (
   getUrl: string,
   putBuffer?: Buffer,
-  axios = Axios.create()
+  axios = Axios.create(),
 ): Promise<string | null> =>
   axios
     .get(getUrl, {

@@ -4,8 +4,8 @@
 
 import { StyledLoader, StyledView } from "@dwidge/components-rnw";
 import { FilePreview } from "./FilePreview";
-import { UseFile2 } from "./UseFile2";
 import { useFileUri } from "./useFileUri";
+import { UseFile2 } from "./FileType";
 
 export const FileView = ({
   file: [file, setFile] = [undefined, undefined] as UseFile2,

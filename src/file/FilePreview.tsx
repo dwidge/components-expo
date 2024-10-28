@@ -5,7 +5,7 @@
 import { CenterView, StyledLoader, StyledText } from "@dwidge/components-rnw";
 import { getFontAwesomeGlyphFromMime } from "@dwidge/components-rnw";
 import { Image } from "@rneui/themed";
-import { getMimeFromUri } from "./uri";
+import { getMimeFromUri } from "../uri";
 import { StyledFontAwesome } from "@dwidge/components-rnw";
 import * as Linking from "expo-linking";
 import { useBufferedState } from "@dwidge/hooks-react";
