@@ -3,6 +3,7 @@ export * from "./exportMedia";
 export * from "./exportUri";
 export * from "./file/index.js";
 export * from "./getMediaFromLibrary";
+export * from "./gps/index.js";
 export * from "./pickDocument";
 export * from "./SplashLoader";
 export * from "./StyledDate";
