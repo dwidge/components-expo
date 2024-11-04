@@ -2,7 +2,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-import { State } from "../utils/State.js";
+import { OptionalState } from "@dwidge/hooks-react";
 
 export type GpsData = {
   coords: {
@@ -20,6 +20,6 @@ export type GpsControlComponent = ({
   data,
   options,
 }: {
-  data?: State<GpsData | null | undefined> | undefined;
+  data?: OptionalState<GpsData | null>;
   options?: {};
 }) => React.JSX.Element;

@@ -2,7 +2,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-import { State } from "../utils/State.js";
+import { OptionalState } from "@dwidge/hooks-react";
 
 export type FileData = {
   id: string;
@@ -14,7 +14,7 @@ export type FileComponent = ({
   data,
   options,
 }: {
-  data?: State<FileData | null | undefined> | undefined;
+  data?: OptionalState<FileData | null>;
   options?: {
     mime?: { enum?: string[] };
     size?: { maximum?: number };
@@ -46,6 +46,6 @@ export type File2Set = {
 };
 export type File2Result = File2Key | null;
 export type UseFile2 = [
-  File2Get | null | undefined,
-  ((item: File2Set | null) => Promise<File2Result>) | undefined,
+  (File2Get | null)?,
+  ((item: File2Set | null) => Promise<File2Result>)?,
 ];

@@ -5,6 +5,7 @@ export * from "./file/index.js";
 export * from "./getMediaFromLibrary";
 export * from "./gps/index.js";
 export * from "./pickDocument";
+export * from "./signature/index.js";
 export * from "./SplashLoader";
 export * from "./StyledDate";
 export * from "./StyledHeader";

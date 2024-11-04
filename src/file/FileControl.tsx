@@ -3,21 +3,19 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 import { StyledLoader } from "@dwidge/components-rnw";
+import { useOptionalState } from "@dwidge/hooks-react";
 import { useContext } from "react";
-import { FileEdit } from "./FileEdit.js";
 import { FileApiContext } from "./FileContext.js";
+import { FileEdit } from "./FileEdit.js";
 import { FileComponent, FileData } from "./FileType.js";
-import { useStateWithOptionalSetter } from "../utils/useStateWithOptionalSetter.js";
 
 export const FileControl: FileComponent = ({
-  data = useStateWithOptionalSetter<FileData | null | undefined>(undefined),
+  data = useOptionalState<FileData | null>(null),
   options,
 }) => <FileControlInternal data={data} />;
 
 const FileControlInternal = ({
-  data: [data, setData] = useStateWithOptionalSetter<
-    FileData | null | undefined
-  >(undefined),
+  data: [data, setData] = useOptionalState<FileData | null>(null),
   file: [file, setFile] = useContext(FileApiContext)(
     data?.id
       ? {

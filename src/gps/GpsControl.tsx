@@ -8,20 +8,18 @@ import {
   StyledText,
   StyledView,
 } from "@dwidge/components-rnw";
+import { useOptionalState } from "@dwidge/hooks-react";
 import * as Location from "expo-location";
-import { useStateWithOptionalSetter } from "../utils/useStateWithOptionalSetter.js";
 import { GpsControlComponent, GpsData } from "./GpsType.js";
 import { openUrlTab } from "./openUrlTab.js";
 
 export const GpsControl: GpsControlComponent = ({
-  data = useStateWithOptionalSetter<GpsData | null | undefined>(undefined),
+  data = useOptionalState<GpsData | null>(null),
   options,
 }) => <GpsControlInternal data={data} />;
 
 const GpsControlInternal = ({
-  data: [data, setData] = useStateWithOptionalSetter<
-    GpsData | null | undefined
-  >(undefined),
+  data: [data, setData] = useOptionalState<GpsData | null>(null),
 }) =>
   data === undefined ? (
     <StyledLoader />
