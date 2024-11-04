@@ -3,11 +3,10 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 import { createContext } from "react";
-import { File2Get, File2Key, FileComponent, UseFile2 } from "./FileType.js";
-import { Text } from "@rneui/themed";
+import { File2Get, UseFile2 } from "./FileType.js";
 
 export const FileApiContext = createContext<
-  (filter?: (File2Get & File2Key) | null) => UseFile2
+  (filter?: File2Get | null) => UseFile2
 >(
   () => (
     console.warn(

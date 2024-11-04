@@ -5,7 +5,7 @@
 import { OptionalState } from "@dwidge/hooks-react";
 
 export type SignatureData = {
-  id: string;
+  id?: string;
   size?: number | null;
   mime?: string | null;
   timestamp?: number;

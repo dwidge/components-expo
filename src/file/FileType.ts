@@ -2,10 +2,10 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-import { OptionalState } from "@dwidge/hooks-react";
+import { AsyncState, OptionalState } from "@dwidge/hooks-react";
 
 export type FileData = {
-  id: string;
+  id?: string;
   size?: number | null;
   mime?: string | null;
 };
@@ -22,11 +22,10 @@ export type FileComponent = ({
 }) => React.JSX.Element;
 
 export type File2Key = {
-  id: string;
+  id?: string;
 };
 export type File2Get = {
   id?: string | undefined;
-  CompanyId?: number | null | undefined;
   created?: boolean | undefined;
   createdAt?: number | undefined;
   createdBy?: number | null | undefined;
@@ -45,7 +44,4 @@ export type File2Set = {
   sha256?: string | null | undefined;
 };
 export type File2Result = File2Key | null;
-export type UseFile2 = [
-  (File2Get | null)?,
-  ((item: File2Set | null) => Promise<File2Result>)?,
-];
+export type UseFile2 = AsyncState<File2Get | null>;

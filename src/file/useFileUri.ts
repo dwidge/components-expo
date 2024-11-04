@@ -3,11 +3,11 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 import { useEffect, useState } from "react";
-import { compressImage } from "../compressImage";
-import { fetchFileDataUri, uploadFileDataUri } from "./uploadFileDataUri";
-import { getDocFromUri, getMimeFromUri, getSizeFromUri } from "../uri";
-import { useAxios } from "../useAxios";
-import { UseFile2 } from "./FileType";
+import { compressImage } from "../compressImage.js";
+import { getDocFromUri, getMimeFromUri, getSizeFromUri } from "../uri.js";
+import { useAxios } from "../useAxios.js";
+import { UseFile2 } from "./FileType.js";
+import { fetchFileDataUri, uploadFileDataUri } from "./uploadFileDataUri.js";
 
 export const useFileUri = (
   [file, setFile]: UseFile2,

@@ -40,27 +40,39 @@ const SignatureControlInternal = ({
         data?.id ? file : null,
         setFile &&
           setData &&
-          ((v) =>
-            setFile(v).then(
-              (key) => (
+          ((
+            dataPrev,
+            dataNext = typeof dataPrev === "function" ? dataPrev({}) : dataPrev,
+          ) =>
+            setFile(dataNext).then(
+              (
+                keyPrev,
+                keyNext = typeof keyPrev === "function" ? keyPrev({}) : keyPrev,
+              ) => (
                 setData(
-                  key && v
+                  keyNext && dataNext
                     ? {
-                        id: key.id,
-                        size: v.size,
-                        mime: v.mime,
+                        id: keyNext.id,
+                        size: dataNext.size,
+                        mime: dataNext.mime,
                         timestamp: new Date().getTime(),
                       }
                     : null,
                 ),
-                key
+                keyNext
               ),
             )),
       ]}
       onPressCreate={
         setFile &&
         setData &&
-        (() => setFile({}).then((key) => (key && setData(key), key)))
+        (() =>
+          setFile({}).then(
+            (
+              keyPrev,
+              keyNext = typeof keyPrev === "function" ? keyPrev({}) : keyPrev,
+            ) => (keyNext && setData(keyNext), keyNext),
+          ))
       }
       onPressDelete={
         setFile && setData && (() => setFile(null).then(() => setData(null)))
@@ -73,7 +85,7 @@ const SignatureEdit = ({
   file: [file, setFile] = useContext(FileApiContext)(),
   fileUri: [fileUri, setFileUri, isUploading] = useFileUri([file, setFile]),
   onPressCreate = optional(
-    async (): Promise<{ id: string } | null | undefined> => {
+    async (): Promise<{ id?: string } | null | undefined> => {
       console.log("onPressCreate1");
       return undefined;
     },

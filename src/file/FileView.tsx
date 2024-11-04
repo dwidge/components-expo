@@ -3,9 +3,9 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 import { StyledLoader, StyledView } from "@dwidge/components-rnw";
-import { FilePreview } from "./FilePreview";
-import { useFileUri } from "./useFileUri";
-import { UseFile2 } from "./FileType";
+import { FilePreview } from "./FilePreview.js";
+import { UseFile2 } from "./FileType.js";
+import { useFileUri } from "./useFileUri.js";
 
 export const FileView = ({
   file: [file, setFile] = [undefined, undefined] as UseFile2,

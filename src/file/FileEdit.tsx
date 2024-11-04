@@ -10,16 +10,16 @@ import {
 } from "@dwidge/components-rnw";
 import { useState } from "react";
 import { Platform, TouchableOpacity } from "react-native";
-import { exportUri } from "../exportUri";
-import { FilePreview } from "./FilePreview";
-import { FilePreviewModal } from "./FilePreviewModal";
-import { getMediaFromCamera } from "../getMediaFromLibrary";
-import { optional } from "../utils/optional";
-import { pickDocument } from "../pickDocument";
-import { StyledDate } from "../StyledDate";
-import { getMimeFromUri, getUriFromDoc } from "../uri";
-import { useFileUri } from "./useFileUri.js";
+import { exportUri } from "../exportUri.js";
+import { getMediaFromCamera } from "../getMediaFromLibrary.js";
+import { pickDocument } from "../pickDocument.js";
+import { StyledDate } from "../StyledDate.js";
+import { getMimeFromUri, getUriFromDoc } from "../uri.js";
+import { optional } from "../utils/optional.js";
+import { FilePreview } from "./FilePreview.js";
+import { FilePreviewModal } from "./FilePreviewModal.js";
 import { File2Get, UseFile2 } from "./FileType.js";
+import { useFileUri } from "./useFileUri.js";
 
 /**
  * React Native Expo component that allows viewing, updating, and downloading an uploaded file.
@@ -42,7 +42,7 @@ export const FileEdit = ({
   file: [file, setFile] = [undefined, undefined] as UseFile2,
   fileUri: [fileUri, setFileUri, isUploading] = useFileUri([file, setFile]),
   onPressCreate = optional(
-    async (): Promise<{ id: string } | null | undefined> => {
+    async (): Promise<{ id?: string } | null | undefined> => {
       console.log("onPressCreate1");
       return undefined;
     },
