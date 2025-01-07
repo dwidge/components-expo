@@ -1,8 +1,8 @@
 {
-  "name": "@dwidge/components-expo",
+  "name": "@osmiumtech/components-expo",
   "version": "0.0.11",
   "description": "A collection of Expo components and utilities.",
-  "repository": "github:dwidge/components-expo",
+  "repository": "github:osmiumtech/components-expo",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
   "types": "./dist/types/index.d.ts",
