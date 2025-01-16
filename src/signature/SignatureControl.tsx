@@ -45,10 +45,7 @@ const SignatureControlInternal = ({
             dataNext = typeof dataPrev === "function" ? dataPrev({}) : dataPrev,
           ) =>
             setFile(dataNext).then(
-              (
-                keyPrev,
-                keyNext = typeof keyPrev === "function" ? keyPrev({}) : keyPrev,
-              ) => (
+              (keyPrev, keyNext = keyPrev) => (
                 setData(
                   keyNext && dataNext
                     ? {
@@ -68,10 +65,9 @@ const SignatureControlInternal = ({
         setData &&
         (() =>
           setFile({}).then(
-            (
-              keyPrev,
-              keyNext = typeof keyPrev === "function" ? keyPrev({}) : keyPrev,
-            ) => (keyNext && setData(keyNext), keyNext),
+            (keyPrev, keyNext = keyPrev) => (
+              keyNext && setData(keyNext), keyNext
+            ),
           ))
       }
       onPressDelete={
