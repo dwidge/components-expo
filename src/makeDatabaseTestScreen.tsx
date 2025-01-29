@@ -1,14 +1,19 @@
+import React, { useState, useEffect, useCallback } from "react";
+import { FlatList, ListRenderItem } from "react-native";
 import {
   ScreenView,
   ScrollView,
   StyledButton,
+  StyledLoader,
   StyledText,
   StyledView,
 } from "@dwidge/components-rnw";
 import { ApiHooks, ApiRecord } from "@dwidge/crud-api-react";
 import { StyledHeader } from "./StyledHeader.js";
 
-export const makeDatabaseTestScreen = <T extends ApiRecord>({
+export const makeDatabaseTestScreen = <
+  T extends ApiRecord & { updatedAt: number },
+>({
   title = "TestItem",
   useApi = () => ({}) as ApiHooks<T>,
   useNavAction = () => (filter: Partial<T>) => {},
@@ -17,12 +22,11 @@ export const makeDatabaseTestScreen = <T extends ApiRecord>({
 } = {}) => {
   const ListScreen = ({}) => (
     <ScreenView>
-      <ScrollView>
-        <StyledHeader title={title} />
-        <StyledView pad gap>
-          <ListView />
-        </StyledView>
-      </ScrollView>
+      <StyledHeader title={title} />
+      <StyledView pad gap flex>
+        <StyledText l>{useApi().useCount()}</StyledText>
+        <ListView />
+      </StyledView>
     </ScreenView>
   );
 
@@ -37,14 +41,47 @@ export const makeDatabaseTestScreen = <T extends ApiRecord>({
     </ScreenView>
   );
 
-  const ListView = <T,>({
-    list = useApi().useGetList({}),
-    createItem = useApi().useCreateItem(),
-    deleteItem = useApi().useDeleteItem(),
-    onPressItem = useNavAction(),
-  }) => (
-    <StyledView gap>
-      {list?.map((item) => (
+  const ListView = () => {
+    const api = useApi();
+    const onPressItem = useNavAction();
+    const createItem = api.useCreateItem();
+    const deleteItem = api.useDeleteItem();
+    const navFilter = useNavFilter();
+
+    const [data, setData] = useState<T[]>([]);
+    const [page, setPage] = useState(0);
+    const itemsPerPage = 200; // Adjust as needed
+
+    const list = api.useGetList(navFilter, {
+      limit: itemsPerPage,
+      offset: page * itemsPerPage,
+      order: [["updatedAt", "DESC"]],
+      columns: ["id"],
+    });
+
+    const hasMore = list !== undefined && list.length === itemsPerPage;
+    const loading = list === undefined;
+
+    useEffect(() => {
+      if (list && page === 0) {
+        setData(list as T[]);
+      } else if (
+        list &&
+        page > 0 &&
+        data[data.length - 1] !== list[list.length - 1]
+      ) {
+        setData((prevData) => [...prevData, ...list] as T[]);
+      }
+    }, [list, data, page]);
+
+    const fetchMoreData = useCallback(() => {
+      if (!loading && hasMore) {
+        setPage((prevPage) => prevPage + 1);
+      }
+    }, [loading, hasMore, page]);
+
+    const renderItem: ListRenderItem<T> = useCallback(
+      ({ item }) => (
         <StyledView key={"" + item.id} row space>
           <StyledText flex onPress={() => onPressItem(item)}>
             {item.id}
@@ -53,14 +90,53 @@ export const makeDatabaseTestScreen = <T extends ApiRecord>({
             Delete
           </StyledButton>
         </StyledView>
-      ))}
-      <StyledButton
-        onPress={createItem ? () => createItem(randItem()) : undefined}
-      >
-        Add
-      </StyledButton>
-    </StyledView>
-  );
+      ),
+      [deleteItem, onPressItem],
+    );
+
+    const keyExtractor = useCallback((item: T) => "" + item.id, []);
+
+    const renderFooter = useCallback(() => {
+      if (loading && page > 0) {
+        // Show loader only when fetching more
+        return (
+          <StyledView style={{ paddingVertical: 20 }}>
+            <StyledLoader />
+          </StyledView>
+        );
+      }
+      return null;
+    }, [loading, page]);
+
+    const handleRefresh = useCallback(() => {
+      setPage(0);
+      setData([]); // Clear existing data while refreshing
+    }, []);
+
+    return (
+      <StyledView gap flex>
+        <FlatList
+          data={data}
+          renderItem={renderItem}
+          keyExtractor={keyExtractor}
+          onEndReached={fetchMoreData}
+          onEndReachedThreshold={0.5} // Adjust as needed
+          ListFooterComponent={renderFooter}
+          ListEmptyComponent={() =>
+            loading ? null : <StyledText>No items found.</StyledText>
+          }
+          refreshing={loading && page === 0} // Only refreshing on initial load
+          onRefresh={handleRefresh}
+          style={{ flex: 1 }}
+        />
+        <StyledButton
+          onPress={createItem ? () => createItem(randItem()) : undefined}
+        >
+          Add
+        </StyledButton>
+      </StyledView>
+    );
+  };
 
   const ItemView = ({
     item: [item, setItem] = useApi().useItem(useNavFilter()),
