@@ -1,6 +1,6 @@
 {
   "name": "@dwidge/components-expo",
-  "version": "0.0.16",
+  "version": "0.0.17",
   "description": "A collection of Expo components and utilities.",
   "repository": "github:dwidge/components-expo",
   "main": "./dist/cjs/index.js",
@@ -22,7 +22,7 @@
     "test": "node --enable-source-maps --test --test-name-pattern"
   },
   "peerDependencies": {
-    "@dwidge/components-rnw": "^0.0.10",
+    "@dwidge/components-rnw": "^0.0.11",
     "@dwidge/fallback-rnw": "^0.0.3",
     "@dwidge/hooks-expo": "^0.0.11",
     "@dwidge/hooks-react": "^0.0.7",
