@@ -1,6 +1,6 @@
 {
   "name": "@dwidge/components-expo",
-  "version": "0.0.17",
+  "version": "0.0.18",
   "description": "A collection of Expo components and utilities.",
   "repository": "github:dwidge/components-expo",
   "main": "./dist/cjs/index.js",
@@ -22,12 +22,12 @@
     "test": "node --enable-source-maps --test --test-name-pattern"
   },
   "peerDependencies": {
-    "@dwidge/components-rnw": "^0.0.11",
+    "@dwidge/components-rnw": "^0.0.12",
     "@dwidge/fallback-rnw": "^0.0.3",
-    "@dwidge/hooks-expo": "^0.0.11",
-    "@dwidge/hooks-react": "^0.0.7",
+    "@dwidge/hooks-expo": "^0.0.12",
+    "@dwidge/hooks-react": "^0.0.8",
     "@dwidge/react-native-web-webview": "^0.0.4",
-    "@dwidge/crud-api-react": "^0.0.15",
+    "@dwidge/crud-api-react": "^0.0.16",
     "@dwidge/utils-js": "^0.0.14",
     "@rneui/themed": "^4.0.0-rc.8",
     "assert": "^2.1.0",
