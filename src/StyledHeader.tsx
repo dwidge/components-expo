@@ -8,14 +8,16 @@ import { StyledText } from "@dwidge/components-rnw";
 import { IconButtonProps, IconButton } from "@dwidge/components-rnw";
 import { AlignedView } from "@dwidge/components-rnw";
 import { Gap } from "@dwidge/components-rnw";
+import { StyleProp, ViewStyle } from "react-native";
 
 export const StyledHeader = ({
   title = "",
   actions = Array<IconButtonProps | false>(),
   back = useNavigation().up as (() => void) | undefined,
+  style = undefined as StyleProp<ViewStyle> | undefined,
 }) => (
   <AlignedView
-    left={back && <IconButton icon="arrow-back" onPress={back} />}
+    left={back && <IconButton icon="arrow-back" onPress={back} style={style} />}
     center={
       <StyledText center bold uppercase>
         {title}
@@ -24,7 +26,7 @@ export const StyledHeader = ({
     right={
       actions
         ?.filter((a): a is IconButtonProps => !!a)
-        .map((a) => <IconButton key={a.icon} {...a} />) ?? <Gap />
+        .map((a) => <IconButton key={a.icon} style={style} {...a} />) ?? <Gap />
     }
   />
 );
