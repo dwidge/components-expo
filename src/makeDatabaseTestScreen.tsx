@@ -12,7 +12,7 @@ import { ApiHooks, ApiRecord } from "@dwidge/crud-api-react";
 import { StyledHeader } from "./StyledHeader.js";
 
 export const makeDatabaseTestScreen = <
-  T extends ApiRecord & { updatedAt: number },
+  T extends ApiRecord & { updatedAt: number; deletedAt: number | null },
 >({
   title = "TestItem",
   useApi = () => ({}) as ApiHooks<T>,
@@ -46,17 +46,27 @@ export const makeDatabaseTestScreen = <
     const onPressItem = useNavAction();
     const createItem = api.useCreateItem();
     const deleteItem = api.useDeleteItem();
+    const restoreItem = api.useRestoreItem();
     const navFilter = useNavFilter();
 
     const [data, setData] = useState<T[]>([]);
     const [page, setPage] = useState(0);
     const itemsPerPage = 200; // Adjust as needed
+    const [showDeleted, setShowDeleted] = useState(false);
+    const toggleDeleted = useCallback(
+      () => setShowDeleted(!showDeleted),
+      [showDeleted],
+    );
 
-    const list = api.useGetList(navFilter, {
+    const filter = showDeleted
+      ? { ...navFilter, deletedAt: { $not: null } }
+      : { ...navFilter, deletedAt: null };
+
+    const list = api.useGetList(filter, {
       limit: itemsPerPage,
       offset: page * itemsPerPage,
       order: [["updatedAt", "DESC"]],
-      columns: ["id"],
+      columns: ["id", "deletedAt"],
     });
 
     const hasMore = list !== undefined && list.length === itemsPerPage;
@@ -81,17 +91,23 @@ export const makeDatabaseTestScreen = <
     }, [loading, hasMore, page]);
 
     const renderItem: ListRenderItem<T> = useCallback(
-      ({ item }) => (
-        <StyledView key={"" + item.id} row space>
-          <StyledText flex onPress={() => onPressItem(item)}>
-            {item.id}
-          </StyledText>
-          <StyledButton onPress={deleteItem && (() => deleteItem(item))}>
-            Delete
-          </StyledButton>
-        </StyledView>
-      ),
-      [deleteItem, onPressItem],
+      ({ item }) => {
+        const isDeleted = item.deletedAt !== null && showDeleted;
+        const buttonText = isDeleted ? "Restore" : "Delete";
+        const buttonAction = isDeleted
+          ? restoreItem && (() => restoreItem(item))
+          : deleteItem && (() => deleteItem(item));
+
+        return (
+          <StyledView key={"" + item.id} row space>
+            <StyledText flex onPress={() => onPressItem(item)}>
+              {item.id}
+            </StyledText>
+            <StyledButton onPress={buttonAction}>{buttonText}</StyledButton>
+          </StyledView>
+        );
+      },
+      [deleteItem, restoreItem, onPressItem, showDeleted],
     );
 
     const keyExtractor = useCallback((item: T) => "" + item.id, []);
@@ -115,6 +131,9 @@ export const makeDatabaseTestScreen = <
 
     return (
       <StyledView gap flex>
+        <StyledButton onPress={toggleDeleted}>
+          {showDeleted ? "Deleted" : "Existing"}
+        </StyledButton>
         <FlatList
           data={data}
           renderItem={renderItem}
