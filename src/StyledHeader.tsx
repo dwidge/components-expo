@@ -2,17 +2,19 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-import React from "react";
+import {
+  AlignedView,
+  IconButton,
+  StyledText,
+  StyledView,
+} from "@dwidge/components-rnw";
 import { useNavigation } from "@dwidge/hooks-expo";
-import { StyledText } from "@dwidge/components-rnw";
-import { IconButtonProps, IconButton } from "@dwidge/components-rnw";
-import { AlignedView } from "@dwidge/components-rnw";
-import { Gap } from "@dwidge/components-rnw";
+import { Fragment, ReactNode } from "react";
 import { StyleProp, ViewStyle } from "react-native";
 
 export const StyledHeader = ({
   title = "",
-  actions = Array<IconButtonProps | false>(),
+  actions = Array<ReactNode>(),
   back = useNavigation().up as (() => void) | undefined,
   style = undefined as StyleProp<ViewStyle> | undefined,
 }) => (
@@ -24,9 +26,9 @@ export const StyledHeader = ({
       </StyledText>
     }
     right={
-      actions
-        ?.filter((a): a is IconButtonProps => !!a)
-        .map((a) => <IconButton key={a.icon} style={style} {...a} />) ?? <Gap />
+      <StyledView pad row gap>
+        {actions?.map((a, i) => <Fragment key={i}>{a}</Fragment>)}
+      </StyledView>
     }
   />
 );
