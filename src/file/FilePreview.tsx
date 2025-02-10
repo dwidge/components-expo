@@ -2,13 +2,15 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-import { CenterView, StyledLoader, StyledText } from "@dwidge/components-rnw";
-import { getFontAwesomeGlyphFromMime } from "@dwidge/components-rnw";
-import { Image } from "@rneui/themed";
-import { getMimeFromUri } from "../uri";
-import { StyledFontAwesome } from "@dwidge/components-rnw";
-import * as Linking from "expo-linking";
+import {
+  CenterView,
+  getFontAwesomeGlyphFromMime,
+  StyledFontAwesome,
+  StyledLoader,
+} from "@dwidge/components-rnw";
 import { useBufferedState } from "@dwidge/hooks-react";
+import { Image } from "@rneui/themed";
+import { asDataUri, getMimeTypeFromDataUri } from "../uri";
 
 const useDataUriCache = (dataUri: string | null | undefined) =>
   useBufferedState<string | null | undefined>([dataUri, () => {}]);
@@ -29,7 +31,7 @@ export const FilePreview = ({
     <CenterView overflowHidden>
       <StyledFontAwesome name={"upload"} />
     </CenterView>
-  ) : getMimeFromUri(dataUriCache).includes("image") ? (
+  ) : getMimeTypeFromDataUri(asDataUri(dataUriCache)).includes("image") ? (
     <Image
       containerStyle={{ flex: 1 }}
       style={{
@@ -46,7 +48,9 @@ export const FilePreview = ({
   ) : (
     <CenterView overflowHidden>
       <StyledFontAwesome
-        name={getFontAwesomeGlyphFromMime(getMimeFromUri(dataUriCache))}
+        name={getFontAwesomeGlyphFromMime(
+          getMimeTypeFromDataUri(asDataUri(dataUriCache)),
+        )}
         // onPress={() => Linking.openURL(dataUriCache)}
       />
     </CenterView>

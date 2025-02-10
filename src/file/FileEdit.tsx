@@ -14,7 +14,11 @@ import { exportUri } from "../exportUri.js";
 import { getMediaFromCamera } from "../getMediaFromLibrary.js";
 import { pickDocument } from "../pickDocument.js";
 import { StyledDate } from "../StyledDate.js";
-import { getMimeFromUri, getUriFromDoc } from "../uri.js";
+import {
+  asDataUri,
+  getDataUriFromDoc,
+  getMimeTypeFromDataUri,
+} from "../uri.js";
 import { optional } from "../utils/optional.js";
 import { FilePreview } from "./FilePreview.js";
 import { FilePreviewModal } from "./FilePreviewModal.js";
@@ -53,7 +57,7 @@ export const FileEdit = ({
   onPressOpen = setFileUri
     ? async () => {
         const doc = await pickDocument();
-        if (doc) await setFileUri(getUriFromDoc(doc), doc?.mime);
+        if (doc) await setFileUri(getDataUriFromDoc(doc), doc?.mime);
       }
     : undefined,
   onPressCamera = Platform.OS !== "web" && setFileUri
@@ -64,7 +68,11 @@ export const FileEdit = ({
     : undefined,
   onPressSave = fileUri
     ? () =>
-        exportUri(fileUri, getMimeFromUri(fileUri)?.replace("/", ".") ?? "file")
+        exportUri(
+          fileUri,
+          getMimeTypeFromDataUri(asDataUri(fileUri))?.replace("/", ".") ??
+            "file",
+        )
     : undefined,
   isModalVisible: [isModalVisible, setModalVisible] = useState(false),
   onPressPreview = optional(async () => {

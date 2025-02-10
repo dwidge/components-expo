@@ -26,9 +26,8 @@ export type File2Key = {
 };
 export type File2Get = {
   id?: string | undefined;
-  created?: boolean | undefined;
   createdAt?: number | undefined;
-  createdBy?: number | null | undefined;
+  updatedAt?: number | undefined;
   size?: number | null | undefined;
   mime?: string | null | undefined;
   sha256?: string | null | undefined;
@@ -37,8 +36,8 @@ export type File2Get = {
 };
 export type File2Set = {
   id?: string | undefined;
-  CompanyId?: number | null | undefined;
-  created?: boolean | undefined;
+  createdAt?: number | undefined;
+  updatedAt?: number | undefined;
   size?: number | null | undefined;
   mime?: string | null | undefined;
   sha256?: string | null | undefined;

@@ -2,16 +2,18 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-import { Platform } from "react-native";
 import * as DocumentPicker from "expo-document-picker";
 import * as FileSystem from "expo-file-system";
+import { Platform } from "react-native";
 import {
-  Doc,
+  asDataUri,
+  asDocBin,
+  getBase64FromDataUri,
   getBufferFromBase64,
-  getDataFromUri,
   getSha256HexFromBuffer,
-  getSha256HexFromUri,
-} from "./uri";
+  getSha256HexFromDataUri,
+  getSizeFromDataUri,
+} from "./uri.js";
 
 const pickDocumentWeb = async () => {
   const result = await DocumentPicker.getDocumentAsync({});
@@ -21,11 +23,13 @@ const pickDocumentWeb = async () => {
   const { uri, mimeType, size } = asset;
   // console.log("pickDocumentWeb1", asset, asset.file);
 
-  return Doc.parse({
-    data: getDataFromUri(uri),
-    mime: mimeType,
-    size,
-    sha256: await getSha256HexFromUri(uri),
+  const dataUri = asDataUri(uri);
+
+  return asDocBin({
+    data: getBase64FromDataUri(dataUri),
+    mime: mimeType ?? "application/octet-stream",
+    size: size ?? getSizeFromDataUri(dataUri),
+    sha256: await getSha256HexFromDataUri(dataUri),
   });
 };
 
@@ -40,16 +44,17 @@ const pickDocumentNative = async () => {
     encoding: FileSystem.EncodingType.Base64,
   });
 
-  const dataUri = `data:${mimeType};base64,${base64}`;
+  // const dataUri = asDataUri(`data:${mimeType};base64,${base64}`);
+  const dataUri = asDataUri(uri);
 
   // console.log("pickDocumentNative1", asset, dataUri.slice(0, 30));
 
   const buffer = await getBufferFromBase64(base64);
   const sha256 = await getSha256HexFromBuffer(buffer);
-  return Doc.parse({
+  return asDocBin({
     data: base64,
-    mime: mimeType,
-    size,
+    mime: mimeType ?? "application/octet-stream",
+    size: size ?? getSizeFromDataUri(dataUri),
     sha256,
   });
 };
