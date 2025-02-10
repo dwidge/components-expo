@@ -37,28 +37,27 @@ const FileControlInternal = ({
       <FileEdit
         file={[
           data?.id ? file : null,
-          setFile &&
-            setData &&
-            ((
-              dataPrev,
-              dataNext = typeof dataPrev === "function"
-                ? dataPrev({})
-                : dataPrev,
-            ) =>
-              setFile(dataNext).then(
-                (keyPrev, keyNext = keyPrev) => (
-                  setData(
-                    keyNext && dataNext
-                      ? {
-                          id: keyNext.id,
-                          size: dataNext.size,
-                          mime: dataNext.mime,
-                        }
-                      : null,
+          setFile && setData
+            ? async (dataPrev) => {
+                const dataNext = await (typeof dataPrev === "function"
+                  ? dataPrev({})
+                  : dataPrev);
+                return setFile(dataNext).then(
+                  (keyPrev, keyNext = keyPrev) => (
+                    setData(
+                      keyNext && dataNext
+                        ? {
+                            id: keyNext.id,
+                            size: dataNext.size,
+                            mime: dataNext.mime,
+                          }
+                        : null,
+                    ),
+                    keyPrev
                   ),
-                  keyPrev
-                ),
-              )),
+                );
+              }
+            : undefined,
         ]}
         onPressCreate={
           setFile &&

@@ -38,27 +38,28 @@ const SignatureControlInternal = ({
     <SignatureEdit
       file={[
         data?.id ? file : null,
-        setFile &&
-          setData &&
-          ((
-            dataPrev,
-            dataNext = typeof dataPrev === "function" ? dataPrev({}) : dataPrev,
-          ) =>
-            setFile(dataNext).then(
-              (keyPrev, keyNext = keyPrev) => (
-                setData(
-                  keyNext && dataNext
-                    ? {
-                        id: keyNext.id,
-                        size: dataNext.size,
-                        mime: dataNext.mime,
-                        timestamp: new Date().getTime(),
-                      }
-                    : null,
+        setFile && setData
+          ? async (dataPrev) => {
+              const dataNext = await (typeof dataPrev === "function"
+                ? dataPrev({})
+                : dataPrev);
+              return setFile(dataNext).then(
+                (keyPrev, keyNext = keyPrev) => (
+                  setData(
+                    keyNext && dataNext
+                      ? {
+                          id: keyNext.id,
+                          size: dataNext.size,
+                          mime: dataNext.mime,
+                          timestamp: new Date().getTime(),
+                        }
+                      : null,
+                  ),
+                  keyNext
                 ),
-                keyNext
-              ),
-            )),
+              );
+            }
+          : undefined,
       ]}
       onPressCreate={
         setFile &&
