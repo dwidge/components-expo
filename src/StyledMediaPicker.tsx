@@ -10,13 +10,8 @@ import {
   StyledView,
 } from "@dwidge/components-rnw";
 import { ImagePickerAsset } from "expo-image-picker";
-import React, { useState } from "react";
-import {
-  Image,
-  Modal,
-  TouchableOpacity,
-  TouchableWithoutFeedback,
-} from "react-native";
+import { useState } from "react";
+import { Image, Modal, Pressable, TouchableOpacity } from "react-native";
 import { UnstyledMediaPicker } from "./UnstyledMediaPicker";
 import { exportMedia } from "./exportMedia";
 
@@ -69,7 +64,7 @@ export const StyledMediaPicker = ({
 
     {selectedImage && (
       <Modal visible={true} transparent={true} animationType="fade">
-        <TouchableWithoutFeedback
+        <Pressable
           style={{
             flex: 1,
             justifyContent: "center",
@@ -86,7 +81,7 @@ export const StyledMediaPicker = ({
               resizeMode: "contain",
             }}
           />
-        </TouchableWithoutFeedback>
+        </Pressable>
       </Modal>
     )}
   </>
