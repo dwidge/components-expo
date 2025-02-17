@@ -2,6 +2,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
+import { FileMeta, FileRecord } from "@dwidge/file-cache-expo";
 import { AsyncState, OptionalState } from "@dwidge/hooks-react";
 
 export type FileData = {
@@ -43,4 +44,4 @@ export type File2Set = {
   sha256?: string | null | undefined;
 };
 export type File2Result = File2Key | null;
-export type UseFile2 = AsyncState<File2Get | null>;
+export type UseFile2 = AsyncState<Partial<FileRecord> | null>;

@@ -2,9 +2,6 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-import * as DocumentPicker from "expo-document-picker";
-import * as FileSystem from "expo-file-system";
-import { Platform } from "react-native";
 import {
   asDataUri,
   asDocBin,
@@ -13,7 +10,10 @@ import {
   getSha256HexFromBuffer,
   getSha256HexFromDataUri,
   getSizeFromDataUri,
-} from "./uri.js";
+} from "@dwidge/file-cache-expo";
+import * as DocumentPicker from "expo-document-picker";
+import * as FileSystem from "expo-file-system";
+import { Platform } from "react-native";
 
 const pickDocumentWeb = async () => {
   const result = await DocumentPicker.getDocumentAsync({});

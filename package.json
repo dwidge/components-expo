@@ -24,6 +24,7 @@
   "peerDependencies": {
     "@dwidge/components-rnw": "^0.0.14",
     "@dwidge/fallback-rnw": "^0.0.3",
+    "@dwidge/file-cache-expo": "^0.0.1",
     "@dwidge/hooks-expo": "^0.0.14",
     "@dwidge/hooks-react": "^0.0.10",
     "@dwidge/react-native-web-webview": "^0.0.4",

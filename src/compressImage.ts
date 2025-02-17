@@ -2,18 +2,30 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
+import {
+  asDataUri,
+  DataUri,
+  getDataUriFromUri,
+  getMimeTypeFromDataUri,
+  MIME,
+} from "@dwidge/file-cache-expo";
 import { AsyncDispatch, AsyncState } from "@dwidge/hooks-react";
 import * as ImageManipulator from "expo-image-manipulator";
 import { useMemo } from "react";
-import { asDataUri, isImageDataUri } from "./uri.js";
+
+export const isImageMimeType = (mimeType: MIME): boolean =>
+  mimeType.startsWith("image/");
+
+export const isImageDataUri = (dataUri: DataUri): boolean =>
+  isImageMimeType(getMimeTypeFromDataUri(dataUri));
 
 export const compressImage = async (
-  uri: string,
+  uri: DataUri,
   resize: {
     width?: number;
     height?: number;
   } = { width: 800 },
-): Promise<string> => {
+): Promise<CompressedDataUri> => {
   const original = await ImageManipulator.manipulateAsync(uri, [], {
     compress: 1,
   });
@@ -22,29 +34,31 @@ export const compressImage = async (
     (resize.width && original.width > resize.width) ||
     (resize.height && original.height > resize.height)
   ) {
-    return (
-      await ImageManipulator.manipulateAsync(uri, [{ resize }], {
-        compress: 0.7,
-        format: ImageManipulator.SaveFormat.JPEG,
-      })
-    ).uri;
+    return getDataUriFromUri(
+      (
+        await ImageManipulator.manipulateAsync(uri, [{ resize }], {
+          compress: 0.7,
+          format: ImageManipulator.SaveFormat.JPEG,
+        })
+      ).uri,
+    );
   }
   return uri;
 };
 
 // Hook to automatically compress image data URIs when the URI is set.
-type CompressedDataUri = string | null;
-type DataUri = string | null;
+type CompressedDataUri = DataUri;
+
 export const useCompressImageUri = ([
   fileUri,
   setFileUri,
-]: AsyncState<CompressedDataUri>): AsyncState<DataUri> => {
-  const setCompressedUri: AsyncDispatch<DataUri> | undefined = useMemo(
+]: AsyncState<CompressedDataUri | null>): AsyncState<DataUri | null> => {
+  const setCompressedUri: AsyncDispatch<DataUri | null> | undefined = useMemo(
     () =>
       setFileUri
         ? async (newUri) => {
             const handleSetUri = async (
-              uriValue: DataUri | Promise<DataUri>,
+              uriValue: DataUri | null | Promise<DataUri | null>,
             ) => {
               if (
                 uriValue &&
@@ -53,7 +67,7 @@ export const useCompressImageUri = ([
               ) {
                 try {
                   const compressedUri = await compressImage(uriValue);
-                  return setFileUri(() => compressedUri); // return promise from setFileUri
+                  return setFileUri(asDataUri(compressedUri)); // return promise from setFileUri
                 } catch (error) {
                   console.warn(
                     "useCompressImageUriE1: Error compressing image, using original",

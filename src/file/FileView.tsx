@@ -5,11 +5,12 @@
 import { StyledLoader, StyledView } from "@dwidge/components-rnw";
 import { FilePreview } from "./FilePreview.js";
 import { UseFile2 } from "./FileType.js";
-import { useFileUri } from "./useFileUri.js";
+import { useFileUri1 } from "@dwidge/file-cache-expo";
+import { useAxios } from "../useAxios.js";
 
 export const FileView = ({
   file: [file, setFile] = [undefined, undefined] as UseFile2,
-  fileUri: [fileUri] = useFileUri([file, setFile]),
+  fileUri: [fileUri] = useFileUri1([file, setFile], useAxios()),
 }): JSX.Element =>
   file ? (
     <StyledView center middle mediumSquare outline overflowHidden>

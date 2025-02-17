@@ -7,11 +7,13 @@ import { ErrorFallback } from "@dwidge/fallback-rnw";
 import { useOptionalState } from "@dwidge/hooks-react";
 import { useContext } from "react";
 import ErrorBoundary from "react-native-error-boundary";
-import { FileApiContext, useFileUri } from "../file";
+import { FileApiContext } from "../file";
 import { StyledDate } from "../StyledDate";
 import { optional } from "../utils/optional";
 import { SignaturePad } from "./SignaturePad";
 import { SignatureComponent, SignatureData } from "./SignatureType";
+import { useFileUri1 } from "@dwidge/file-cache-expo";
+import { useAxios } from "../useAxios";
 
 export const SignatureControl: SignatureComponent = (props) => (
   <SignatureControlInternal {...props} />
@@ -38,10 +40,10 @@ const SignatureControlInternal = ({
     <SignatureEdit
       file={[
         data?.id ? file : null,
-        setFile && setData
+        setFile && setData && file !== undefined
           ? async (dataPrev) => {
               const dataNext = await (typeof dataPrev === "function"
-                ? dataPrev({})
+                ? dataPrev(file)
                 : dataPrev);
               return setFile(dataNext).then(
                 (keyPrev, keyNext = keyPrev) => (
@@ -80,7 +82,10 @@ const SignatureControlInternal = ({
 
 const SignatureEdit = ({
   file: [file, setFile] = useContext(FileApiContext)(),
-  fileUri: [fileUri, setFileUri, isUploading] = useFileUri([file, setFile]),
+  fileUri: [fileUri, setFileUri, isUploading] = useFileUri1(
+    [file, setFile],
+    useAxios(),
+  ),
   onPressCreate = optional(
     async (): Promise<{ id?: string } | null | undefined> => {
       console.log("onPressCreate1");

@@ -8,22 +8,23 @@ import {
   StyledText,
   StyledView,
 } from "@dwidge/components-rnw";
+import {
+  asDataUri,
+  getDataUriFromDoc,
+  getMimeTypeFromDataUri,
+  useFileUri1,
+} from "@dwidge/file-cache-expo";
 import { useState } from "react";
 import { Platform, TouchableOpacity } from "react-native";
 import { exportUri } from "../exportUri.js";
 import { getMediaFromCamera } from "../getMediaFromLibrary.js";
 import { pickDocument } from "../pickDocument.js";
 import { StyledDate } from "../StyledDate.js";
-import {
-  asDataUri,
-  getDataUriFromDoc,
-  getMimeTypeFromDataUri,
-} from "../uri.js";
+import { useAxios } from "../useAxios.js";
 import { optional } from "../utils/optional.js";
 import { FilePreview } from "./FilePreview.js";
 import { FilePreviewModal } from "./FilePreviewModal.js";
 import { File2Get, UseFile2 } from "./FileType.js";
-import { useFileUri } from "./useFileUri.js";
 
 /**
  * React Native Expo component that allows viewing, updating, and downloading an uploaded file.
@@ -44,7 +45,10 @@ import { useFileUri } from "./useFileUri.js";
 
 export const FileEdit = ({
   file: [file, setFile] = [undefined, undefined] as UseFile2,
-  fileUri: [fileUri, setFileUri, isUploading] = useFileUri([file, setFile]),
+  fileUri: [fileUri, setFileUri, isUploading] = useFileUri1(
+    [file, setFile],
+    useAxios(),
+  ),
   onPressCreate = optional(
     async (): Promise<{ id?: string } | null | undefined> => {
       console.log("onPressCreate1");

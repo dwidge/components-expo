@@ -8,9 +8,9 @@ import {
   StyledFontAwesome,
   StyledLoader,
 } from "@dwidge/components-rnw";
+import { asDataUri, getMimeTypeFromDataUri } from "@dwidge/file-cache-expo";
 import { useBufferedState } from "@dwidge/hooks-react";
 import { Image } from "@rneui/themed";
-import { asDataUri, getMimeTypeFromDataUri } from "../uri";
 
 const useDataUriCache = (dataUri: string | null | undefined) =>
   useBufferedState<string | null | undefined>([dataUri, () => {}]);
