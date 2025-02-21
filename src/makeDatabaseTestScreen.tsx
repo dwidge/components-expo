@@ -1,25 +1,51 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { FlatList, ListRenderItem } from "react-native";
 import {
+  Gap,
   ScreenView,
   ScrollView,
   StyledButton,
   StyledLoader,
   StyledText,
   StyledView,
+  SwitchButton,
 } from "@dwidge/components-rnw";
-import { ApiHooks, ApiRecord } from "@dwidge/crud-api-react";
+import {
+  ApiFilterObject,
+  ApiHooks,
+  ApiItem3,
+  ApiRecord,
+} from "@dwidge/crud-api-react";
+import { useNav } from "@dwidge/hooks-expo";
+import { AsyncState, getActionValue } from "@dwidge/hooks-react";
+import { getTimeDifferenceString } from "@dwidge/utils-js";
+import { useLocalSearchParams } from "expo-router";
+import { useCallback, useEffect, useState } from "react";
+import { FlatList, ListRenderItem } from "react-native";
 import { StyledHeader } from "./StyledHeader.js";
 
-export const makeDatabaseTestScreen = <
-  T extends ApiRecord & { updatedAt: number; deletedAt: number | null },
->({
+export const makeDatabaseTestScreen = <T extends ApiRecord & ApiItem3>({
   title = "TestItem",
   useApi = () => ({}) as ApiHooks<T>,
   useNavAction = () => (filter: Partial<T>) => {},
-  useNavFilter = () => ({}) as Partial<T>,
+  useNavFilter = () => ({}) as ApiFilterObject<T>,
   randItem = () => ({}) as Partial<T>,
 } = {}) => {
+  const DeleteRestoreButton = ({ api = useApi(), item = api.useItem() }) => {
+    const deleteItem = api.useDeleteItem();
+    const restoreItem = api.useRestoreItem();
+
+    const isDeleted = item.deletedAt !== null;
+    const buttonText = isDeleted ? "Restore" : "Delete";
+    const buttonAction = isDeleted
+      ? restoreItem && (() => restoreItem(item))
+      : deleteItem && (() => deleteItem(item));
+
+    return (
+      <StyledButton onPress={buttonAction} disabled={!buttonAction}>
+        {buttonText}
+      </StyledButton>
+    );
+  };
+
   const ListScreen = ({}) => (
     <ScreenView>
       <StyledHeader title={title} />
@@ -45,29 +71,45 @@ export const makeDatabaseTestScreen = <
     const api = useApi();
     const onPressItem = useNavAction();
     const createItem = api.useCreateItem();
-    const deleteItem = api.useDeleteItem();
-    const restoreItem = api.useRestoreItem();
     const navFilter = useNavFilter();
 
     const [data, setData] = useState<T[]>([]);
     const [page, setPage] = useState(0);
-    const itemsPerPage = 200; // Adjust as needed
-    const [showDeleted, setShowDeleted] = useState(false);
+    const itemsPerPage = 200;
+
+    const { deleted: deletedParam } = useLocalSearchParams();
+    const showDeleted = deletedParam === "true";
+    const nav = useNav();
+
     const toggleDeleted = useCallback(
-      () => setShowDeleted(!showDeleted),
-      [showDeleted],
+      (newValue: "Existing" | "Deleted") => {
+        const newShowDeleted = newValue === "Deleted";
+        nav(".", newShowDeleted ? { deleted: "true" } : { deleted: undefined });
+      },
+      [nav],
     );
 
-    const filter = showDeleted
-      ? { ...navFilter, deletedAt: { $not: null } }
-      : { ...navFilter, deletedAt: null };
+    const showDeletedAsyncState: AsyncState<"Existing" | "Deleted"> = [
+      showDeleted ? "Deleted" : "Existing",
+      async (getValue) => {
+        const newValue = await getActionValue<"Existing" | "Deleted">(
+          getValue,
+          showDeleted ? "Deleted" : "Existing",
+        );
+        toggleDeleted(newValue);
+        return newValue;
+      },
+    ];
 
-    const list = api.useGetList(filter, {
-      limit: itemsPerPage,
-      offset: page * itemsPerPage,
-      order: [["updatedAt", "DESC"]],
-      columns: ["id", "deletedAt"],
-    });
+    const list = api.useGetList(
+      { ...navFilter, deletedAt: showDeleted ? { $not: null } : null },
+      {
+        limit: itemsPerPage,
+        offset: page * itemsPerPage,
+        order: [showDeleted ? ["deletedAt", "DESC"] : ["updatedAt", "DESC"]],
+        columns: ["id", "deletedAt", "updatedAt"],
+      },
+    );
 
     const hasMore = list !== undefined && list.length === itemsPerPage;
     const loading = list === undefined;
@@ -91,23 +133,19 @@ export const makeDatabaseTestScreen = <
     }, [loading, hasMore, page]);
 
     const renderItem: ListRenderItem<T> = useCallback(
-      ({ item }) => {
-        const isDeleted = item.deletedAt !== null && showDeleted;
-        const buttonText = isDeleted ? "Restore" : "Delete";
-        const buttonAction = isDeleted
-          ? restoreItem && (() => restoreItem(item))
-          : deleteItem && (() => deleteItem(item));
-
-        return (
-          <StyledView key={"" + item.id} row space>
-            <StyledText flex onPress={() => onPressItem(item)}>
-              {item.id}
-            </StyledText>
-            <StyledButton onPress={buttonAction}>{buttonText}</StyledButton>
-          </StyledView>
-        );
-      },
-      [deleteItem, restoreItem, onPressItem, showDeleted],
+      ({ item }) => (
+        <StyledView key={"" + item.id} row gap>
+          <StyledText onPress={() => onPressItem(item)} numberOfLines={1}>
+            {item.id}
+          </StyledText>
+          <Gap flex />
+          <StyledText flex numberOfLines={1} right>
+            {getTimeDifferenceString(item.updatedAt)}
+          </StyledText>
+          <DeleteRestoreButton api={api} item={item} />
+        </StyledView>
+      ),
+      [onPressItem, showDeleted],
     );
 
     const keyExtractor = useCallback((item: T) => "" + item.id, []);
@@ -131,9 +169,10 @@ export const makeDatabaseTestScreen = <
 
     return (
       <StyledView gap flex>
-        <StyledButton onPress={toggleDeleted}>
-          {showDeleted ? "Deleted" : "Existing"}
-        </StyledButton>
+        <SwitchButton
+          options={["Existing", "Deleted"]}
+          value={showDeletedAsyncState}
+        />
         <FlatList
           data={data}
           renderItem={renderItem}
@@ -147,6 +186,7 @@ export const makeDatabaseTestScreen = <
           refreshing={loading && page === 0} // Only refreshing on initial load
           onRefresh={handleRefresh}
           style={{ flex: 1 }}
+          contentContainerStyle={{ gap: 5 }}
         />
         <StyledButton
           onPress={createItem ? () => createItem(randItem()) : undefined}
@@ -158,24 +198,28 @@ export const makeDatabaseTestScreen = <
   };
 
   const ItemView = ({
-    item: [item, setItem] = useApi().useItem(useNavFilter()),
-  }) => (
-    <StyledView>
-      {item ? (
+    item: [item, setItem] = useApi().useItem(
+      {
+        ...(useNavFilter() as Partial<T>),
+      },
+      { columns: ["deletedAt"] },
+    ),
+  }) =>
+    item ? (
+      <StyledView gap>
         <StyledText numberOfLines={111}>
           {JSON.stringify(item, null, 2)}
         </StyledText>
-      ) : (
-        <StyledText>Not Found</StyledText>
-      )}
-      <StyledButton onPress={setItem && (() => setItem(randItem()))}>
-        Random
-      </StyledButton>
-      <StyledButton onPress={setItem && (() => setItem(null))}>
-        Delete
-      </StyledButton>
-    </StyledView>
-  );
+        <StyledView row gap>
+          <StyledButton onPress={setItem && (() => setItem(randItem()))}>
+            Random
+          </StyledButton>
+          <DeleteRestoreButton item={item} />
+        </StyledView>
+      </StyledView>
+    ) : (
+      <StyledText>Not Found</StyledText>
+    );
 
   return { ListScreen, ItemScreen };
 };
