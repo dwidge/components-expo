@@ -31,6 +31,7 @@
     "@dwidge/trace-js": "^0.0.10",
     "@dwidge/crud-api-react": "^0.0.19",
     "@dwidge/utils-js": "^0.0.15",
+    "@react-native-community/datetimepicker": "8.0.1",
     "@rneui/themed": "^4.0.0-rc.8",
     "assert": "^2.1.0",
     "axios": "^1.7.7",

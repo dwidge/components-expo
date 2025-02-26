@@ -1,5 +1,6 @@
 export * from "./animated/index.js";
 export * from "./compressImage.js";
+export * from "./DatePicker.js";
 export * from "./DoodlePad/index.js";
 export * from "./exportMedia.js";
 export * from "./exportUri.js";
