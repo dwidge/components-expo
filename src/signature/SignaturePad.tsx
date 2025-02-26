@@ -3,16 +3,66 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 import { StyledText } from "@dwidge/components-rnw";
-import { useOptionalState } from "@dwidge/hooks-react";
+import { asDataUri, DataUri } from "@dwidge/file-cache-expo";
+import { AsyncState, OptionalState, useAsyncState } from "@dwidge/hooks-react";
 import { WebView } from "@dwidge/react-native-web-webview";
 import { useRef, useState } from "react";
 import { Button, Image, Modal, TouchableOpacity, View } from "react-native";
 
+/**
+ * Interface for the SignaturePad component props.
+ */
+interface SignaturePadProps {
+  /**
+   * An optional state tuple to manage the signature data URI.
+   *
+   * - The first element is the current data URI (string or null).
+   * - The second element is the setter function for the data URI.
+   *
+   * If current is not provided (undefined), the component will be disabled/uninitialized.
+   * If setter is not provided (undefined), the component will be read-only, non editable.
+   */
+  dataUri?: AsyncState<DataUri | null> | OptionalState<DataUri | null>;
+  /**
+   * The height of the signature pad canvas and preview area.
+   * @default 100
+   */
+  height?: number;
+  /**
+   * The width of the signature pad canvas.
+   * @default 300
+   */
+  width?: number;
+}
+
+/**
+ * SignaturePad Component for capturing signatures using a WebView canvas.
+ *
+ * This component renders a signature pad using an HTML canvas within a WebView.
+ * It allows users to draw signatures and save them as data URIs.
+ *
+ * @param {SignaturePadProps} props - The component props.
+ * @returns {JSX.Element} The SignaturePad component.
+ *
+ * @example
+ * // Usage with state management:
+ * const [signatureData, setSignatureData] = useAsyncState<string | null>(null);
+ * <SignaturePad dataUri={[signatureData, setSignatureData]} />
+ *
+ * @example
+ * // Usage as display only:
+ * <SignaturePad dataUri={[null, undefined]} />
+ *
+ * @example
+ * // Usage with initial data:
+ * const [signatureData, setSignatureData] = useAsyncState<string | null>("data:image/png;base64,...");
+ * <SignaturePad dataUri={[signatureData, setSignatureData]} />
+ */
 export const SignaturePad = ({
-  dataUri: [dataUri, setDataUri] = useOptionalState<string | null>(null),
+  dataUri: [dataUri, setDataUri] = useAsyncState<DataUri | null>(null),
   height = 100,
   width = 300,
-}) => {
+}: SignaturePadProps) => {
   const webViewRef = useRef<WebView>(null);
   const [modalVisible, setModalVisible] = useState(false);
 
@@ -38,7 +88,7 @@ export const SignaturePad = ({
     </head>
     <body>
       <canvas id="padCanvas" width="${width}" height="${height}"></canvas>
-      
+
       <script>
         const canvas = document.getElementById('padCanvas');
         const ctx = canvas.getContext('2d');
@@ -110,7 +160,7 @@ export const SignaturePad = ({
     if (source === "canvas" && setDataUri) {
       if (typeof payload !== "string")
         throw new Error("SignaturePadE1: payload not a string");
-      setDataUri(payload);
+      setDataUri(asDataUri(payload));
       setModalVisible(false);
     }
   };

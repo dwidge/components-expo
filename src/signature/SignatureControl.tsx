@@ -12,7 +12,7 @@ import { StyledDate } from "../StyledDate";
 import { optional } from "../utils/optional";
 import { SignaturePad } from "./SignaturePad";
 import { SignatureComponent, SignatureData } from "./SignatureType";
-import { useFileUri1 } from "@dwidge/file-cache-expo";
+import { asDataUri, useFileUri1 } from "@dwidge/file-cache-expo";
 import { useAxios } from "../useAxios";
 
 export const SignatureControl: SignatureComponent = (props) => (
@@ -126,7 +126,7 @@ const SignatureEdit = ({
         </StyledView>
         <SignaturePad
           dataUri={[
-            fileUri,
+            fileUri != null ? asDataUri(fileUri) : fileUri,
             setFileUri &&
               ((uri) =>
                 setFileUri(

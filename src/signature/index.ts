@@ -1,2 +1,3 @@
-export * from "./SignatureControl";
-export * from "./SignatureType";
+export * from "./SignatureControl.js";
+export * from "./SignaturePad.js";
+export * from "./SignatureType.js";
