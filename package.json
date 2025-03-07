@@ -51,6 +51,7 @@
     "react-native": "^0.74.5",
     "react-native-error-boundary": "^1.2.5",
     "react-native-reanimated": "~3.10.1",
+    "reanimated-color-picker": "^3.0.6",
     "zod": "^3.23.8"
   },
   "devDependencies": {

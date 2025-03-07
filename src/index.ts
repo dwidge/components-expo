@@ -13,6 +13,7 @@ export * from "./NavButton.js";
 export * from "./pickDocument.js";
 export * from "./signature/index.js";
 export * from "./SplashLoader.js";
+export * from "./StyledColorPicker.js";
 export * from "./StyledDate.js";
 export * from "./StyledHeader.js";
 export * from "./StyledMediaPicker.js";
