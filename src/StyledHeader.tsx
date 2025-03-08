@@ -19,7 +19,15 @@ export const StyledHeader = ({
   style = undefined as StyleProp<ViewStyle> | undefined,
 }) => (
   <AlignedView
-    left={back && <IconButton icon="arrow-back" onPress={back} style={style} />}
+    left={
+      back && (
+        <IconButton
+          name="arrow-back"
+          onPress={back}
+          style={[{ padding: 25 }, style]}
+        />
+      )
+    }
     center={
       <StyledText center bold uppercase>
         {title}
