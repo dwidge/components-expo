@@ -9,24 +9,26 @@ import {
   StyledView,
 } from "@dwidge/components-rnw";
 import { useNavigation } from "@dwidge/hooks-expo";
+import { notNull } from "@dwidge/utils-js";
 import { Fragment, ReactNode } from "react";
 import { StyleProp, ViewStyle } from "react-native";
 
 export const StyledHeader = ({
   title = "",
+  left = Array<ReactNode>(),
   actions = Array<ReactNode>(),
   back = useNavigation().up as (() => void) | undefined,
   style = undefined as StyleProp<ViewStyle> | undefined,
 }) => (
   <AlignedView
     left={
-      back && (
-        <IconButton
-          name="arrow-back"
-          onPress={back}
-          style={[{ padding: 25 }, style]}
-        />
-      )
+      <StyledView pad row gap>
+        {[back && <IconButton name="arrow-back" onPress={back} />, ...left]
+          .filter(notNull)
+          .map((a, i) => (
+            <Fragment key={i}>{a}</Fragment>
+          ))}
+      </StyledView>
     }
     center={
       <StyledText center bold uppercase>
@@ -35,7 +37,9 @@ export const StyledHeader = ({
     }
     right={
       <StyledView pad row gap>
-        {actions?.map((a, i) => <Fragment key={i}>{a}</Fragment>)}
+        {actions.map((a, i) => (
+          <Fragment key={i}>{a}</Fragment>
+        ))}
       </StyledView>
     }
   />
