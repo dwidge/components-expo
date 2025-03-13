@@ -1,6 +1,6 @@
 {
   "name": "@dwidge/components-expo",
-  "version": "0.0.29",
+  "version": "0.0.30",
   "description": "A collection of Expo components and utilities.",
   "repository": "github:dwidge/components-expo",
   "main": "./dist/cjs/index.js",
@@ -22,14 +22,14 @@
     "test": "node --enable-source-maps --test --test-name-pattern"
   },
   "peerDependencies": {
-    "@dwidge/components-rnw": "^0.0.19",
+    "@dwidge/components-rnw": "^0.0.20",
     "@dwidge/fallback-rnw": "^0.0.4",
-    "@dwidge/file-cache-expo": "^0.0.9",
-    "@dwidge/hooks-expo": "^0.0.22",
+    "@dwidge/file-cache-expo": "^0.0.10",
+    "@dwidge/hooks-expo": "^0.0.23",
     "@dwidge/hooks-react": "^0.0.15",
     "@dwidge/react-native-web-webview": "^0.0.5",
     "@dwidge/trace-js": "^0.0.11",
-    "@dwidge/crud-api-react": "^0.0.25",
+    "@dwidge/crud-api-react": "^0.0.26",
     "@dwidge/utils-js": "^0.0.18",
     "@react-native-community/datetimepicker": "8.0.1",
     "@rneui/themed": "^4.0.0-rc.8",
