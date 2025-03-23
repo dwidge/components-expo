@@ -6,9 +6,6 @@ import { Fragment, useCallback, useEffect, useRef, useState } from "react";
 import { Modal, StyleProp, TouchableOpacity, ViewStyle } from "react-native";
 import { CompositeImage } from "./CompositeImage.js";
 
-const log = (...args) => {};
-// const log = (...args) => console.log(...args);
-
 /**
  * Properties for the {@link DoodlePad} component.
  *
@@ -120,6 +117,8 @@ interface DoodlePadProps {
    * <DoodlePad maximize={false} />;
    */
   maximize?: boolean;
+
+  log?: (...args: any[]) => void;
 }
 
 /**
@@ -242,11 +241,10 @@ const doodlePadHTML = `
        *
        * @param {...*} args - Arguments to be logged. These can be of any type and will be stringified for messaging.
        */
-      function log2(...args) {
-        console.log(...args); // Keep console.log for WebView's own console
+      function log(...args) {
+        // console.log(...args); // Keep console.log for WebView's own console
         window.ReactNativeWebView.postMessage(JSON.stringify({ source: 'webview-log', payload: args })); // Relay log to RN
       }
-      const log = (...args) => {};
 
       /**
        * Sets the current drawing color, updates the canvas context's stroke style, and reflects the selection in the color palette UI.
@@ -672,8 +670,7 @@ const doodlePadHTML = `
         }
       }
 
-
-      window.addEventListener('message', (event) => {
+      const onMessage=(event) => {
         if (event.data && typeof event.data === 'string') {
           try {
             const messageData = JSON.parse(event.data);
@@ -687,7 +684,9 @@ const doodlePadHTML = `
             log("Error parsing message in WebView:", event.data, error);
           }
         }
-      });
+      }
+      window.addEventListener('message', onMessage);
+      document.addEventListener('message', onMessage);
     </script>
   </body>
   </html>
@@ -730,6 +729,7 @@ export const DoodlePad = ({
   backgroundColor,
   style,
   maximize = true,
+  log = (...args) => {}, //console.log(...args),
 }: DoodlePadProps) => {
   const webViewRef = useRef<WebView>(null);
   const [modalVisible, setModalVisible] = useState(false);
@@ -797,18 +797,16 @@ export const DoodlePad = ({
           const { source, payload }: { source: string; payload: any } =
             parsedMessage;
           if (source.startsWith("webview"))
-            log("onMessage1: Message from WebView", parsedMessage);
-
-          if (source === "webview-canvas" && setDoodleUri) {
-            if (typeof payload !== "string")
-              throw new Error("Payload not a string");
-            setDoodleUri(asDataUri(payload));
-            setModalVisible(false);
-          } else if (source === "webview-log") {
-            log("WebView Log:", payload);
-          }
+            if (source === "webview-canvas" && setDoodleUri) {
+              if (typeof payload !== "string")
+                throw new Error("DoodlePad_onMessageE1: Payload not a string");
+              setDoodleUri(asDataUri(payload));
+              setModalVisible(false);
+            } else if (source === "webview-log") {
+              log("DoodlePad_onMessage1:", payload);
+            }
         } catch (error) {
-          console.warn("Error parsing message:", message, error);
+          console.warn("DoodlePad_onMessageE2:", message, error);
         }
       }
     },
@@ -852,7 +850,7 @@ export const DoodlePad = ({
    * WebView only after it is fully loaded and responsive.
    */
   const handleWebViewLoad = useCallback(() => {
-    log("WebView loaded successfully");
+    log("DoodlePad1: WebView loaded successfully");
     setWebViewReady(true); // Set webViewReady to true when WebView loads
   }, []);
 
