@@ -128,6 +128,9 @@ interface DoodlePadProps {
  * Users can select colors from this palette to draw on the canvas.
  */
 const colorPalette = [
+  "white",
+  "gray",
+  "black",
   "red",
   "green",
   "blue",
@@ -137,9 +140,6 @@ const colorPalette = [
   "cyan",
   "magenta",
   "brown",
-  "black",
-  "gray",
-  "white",
 ];
 
 /**
@@ -209,12 +209,41 @@ const doodlePadHTML = `
       .color-swatch.selected {
         border: 3px solid white;
       }
+      #shape-palette {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        padding: 3px;
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+        z-index: 2;
+      }
+      .shape-button {
+        width: 30px;
+        height: 30px;
+        background-color: #eee;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+      }
+      .shape-button.selected {
+        background-color: #aaa;
+      }
     </style>
   </head>
   <body>
     <div id="container">
       <canvas id="padCanvas"></canvas>
       <div id="palette" style="display:none;"></div>
+      <div id="shape-palette" style="display:none;">
+        <div class="shape-button selected" data-shape="pencil" id="pencil-button">✏️</div>
+        <div class="shape-button" data-shape="circle" id="circle-button">⚪</div>
+        <div class="shape-button" data-shape="square" id="square-button">⬜</div>
+      </div>
     </div>
     <script>
       const canvas = document.getElementById('padCanvas');
@@ -224,13 +253,18 @@ const doodlePadHTML = `
       let drawing = false;
       let history = [];
       let currentPath = [];
-      let currentColor = 'red';
+      let currentColor = 'white';
       ctx.strokeStyle = currentColor;
       let bgImage = null;
       let canvasResWidth = null;
       let canvasResHeight = null;
       let selectedSwatch = null;
       let doodleImage = null;
+      let drawingMode = 'pencil'; // pencil, circle, square
+      let shapeStartPoint = null;
+      let shapeEndPoint = null;
+      let currentShape = null; // To hold the shape data while drawing/resizing
+      let selectedShapeButton = null;
 
       /**
        * Logs messages to the console and relays them to the React Native side via WebView messaging.
@@ -266,6 +300,24 @@ const doodlePadHTML = `
           selectedSwatch.classList.add('selected');
         }
       }
+
+      /**
+       * Sets the current drawing shape mode and updates the UI to reflect the selected mode.
+       * @param {string} shape - The drawing shape mode to set ('pencil', 'circle', 'square').
+       */
+      function setDrawingShape(shape) {
+        log('setDrawingShape called with shape:', shape);
+        drawingMode = shape;
+
+        if (selectedShapeButton) {
+          selectedShapeButton.classList.remove('selected');
+        }
+        selectedShapeButton = document.getElementById(\`\${shape}-button\`);
+        if (selectedShapeButton) {
+          selectedShapeButton.classList.add('selected');
+        }
+      }
+
 
       /**
        * Converts screen coordinates (clientX, clientY) to canvas-relative coordinates,
@@ -324,20 +376,27 @@ const doodlePadHTML = `
        * @param {MouseEvent|TouchEvent} e - The event object associated with the start of the drawing action (either a mouse or touch event).
        */
       function startDrawing(e) {
-        log('startDrawing event:', e.type);
+        log('startDrawing event:', e.type, 'mode:', drawingMode);
         drawing = true;
-        ctx.beginPath(); // Ensure beginPath is called at the start
-        ctx.strokeStyle = currentColor; // Re-set strokeStyle at the start of drawing
-        ctx.lineWidth = 2; // Re-set lineWidth at the start of drawing
-        ctx.lineCap = 'round'; // Re-set lineCap at the start of drawing
 
         const clientX = e.touches ? e.touches[0].clientX : e.clientX;
         const clientY = e.touches ? e.touches[0].clientY : e.clientY;
         const canvasCoords = getCanvasRelativeCoords(clientX, clientY);
 
-        log('startDrawing coords:', { clientX, clientY, canvasCoords });
-        ctx.moveTo(canvasCoords.x, canvasCoords.y);
-        currentPath = [{ x: canvasCoords.x, y: canvasCoords.y, start: true, color: currentColor }];
+        if (drawingMode === 'pencil') {
+          ctx.beginPath(); // Ensure beginPath is called at the start
+          ctx.strokeStyle = currentColor; // Re-set strokeStyle at the start of drawing
+          ctx.lineWidth = 2; // Re-set lineWidth at the start of drawing
+          ctx.lineCap = 'round'; // Re-set lineCap at the start of drawing
+
+          log('startDrawing pencil coords:', { clientX, clientY, canvasCoords });
+          ctx.moveTo(canvasCoords.x, canvasCoords.y);
+          currentPath = [{ x: canvasCoords.x, y: canvasCoords.y, start: true, color: currentColor }];
+        } else if (drawingMode === 'circle' || drawingMode === 'square') {
+          shapeStartPoint = canvasCoords;
+          shapeEndPoint = canvasCoords; // Initialize end point to start point for tap circles/squares
+          currentShape = { shape: drawingMode, start: shapeStartPoint, end: shapeEndPoint, color: currentColor };
+        }
       }
 
       /**
@@ -347,27 +406,43 @@ const doodlePadHTML = `
        */
       function draw(e) {
         if (!drawing) return;
-        log('draw event:', e.type);
+        log('draw event:', e.type, 'mode:', drawingMode);
 
         const clientX = e.touches ? e.touches[0].clientX : e.clientX;
         const clientY = e.touches ? e.touches[0].clientY : e.clientY;
         const canvasCoords = getCanvasRelativeCoords(clientX, clientY);
 
-        log('draw coords:', { clientX, clientY, canvasCoords });
-        ctx.lineTo(canvasCoords.x, canvasCoords.y);
-        ctx.stroke();
-        currentPath.push({ x: canvasCoords.x, y: canvasCoords.y, color: currentColor });
+        if (drawingMode === 'pencil') {
+          log('draw pencil coords:', { clientX, clientY, canvasCoords });
+          ctx.lineTo(canvasCoords.x, canvasCoords.y);
+          ctx.stroke();
+          currentPath.push({ x: canvasCoords.x, y: canvasCoords.y, color: currentColor });
+        } else if (drawingMode === 'circle' || drawingMode === 'square') {
+          shapeEndPoint = canvasCoords;
+          currentShape.end = shapeEndPoint;
+          redrawCanvas(); // Redraw history and current shape preview
+          drawShapePreview(currentShape);
+        }
       }
 
       /**
        * Handles the end of a drawing path when the user lifts their touch or releases the mouse button.
        */
       function endDrawing() {
-        log('endDrawing event');
+        log('endDrawing event, mode:', drawingMode);
         if (drawing) {
-          history.push(currentPath);
+          if (drawingMode === 'pencil') {
+            history.push(currentPath);
+          } else if (drawingMode === 'circle' || drawingMode === 'square') {
+            if (currentShape) {
+              history.push(currentShape);
+              currentShape = null; // Clear current shape after adding to history
+            }
+          }
         }
         drawing = false;
+        shapeStartPoint = null;
+        shapeEndPoint = null;
       }
 
       canvas.addEventListener('touchstart', startDrawing);
@@ -385,6 +460,7 @@ const doodlePadHTML = `
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         history = [];
         currentPath = [];
+        currentShape = null;
         if (doodleImage) {
           doodleImage.remove();
           doodleImage = null;
@@ -404,6 +480,61 @@ const doodlePadHTML = `
       }
 
       /**
+       * Draws a circle on the canvas context.
+       * @param {CanvasRenderingContext2D} context - The canvas 2D rendering context.
+       * @param {number} centerX - The x-coordinate of the circle's center.
+       * @param {number} centerY - The y-coordinate of the circle's center.
+       * @param {number} radius - The radius of the circle.
+       * @param {string} color - The color of the circle's stroke.
+       */
+      function drawCircle(context, centerX, centerY, radius, color) {
+        context.beginPath();
+        context.strokeStyle = color;
+        context.lineWidth = 2;
+        context.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+        context.stroke();
+      }
+
+      /**
+       * Draws a rectangle on the canvas context.
+       * @param {CanvasRenderingContext2D} context - The canvas 2D rendering context.
+       * @param {number} x - The x-coordinate of the rectangle's top-left corner.
+       * @param {number} y - The y-coordinate of the rectangle's top-left corner.
+       * @param {number} width - The width of the rectangle.
+       * @param {number} height - The height of the rectangle.
+       * @param {string} color - The color of the rectangle's stroke.
+       */
+      function drawRectangle(context, x, y, width, height, color) {
+        context.beginPath();
+        context.strokeStyle = color;
+        context.lineWidth = 2;
+        context.rect(x, y, width, height);
+        context.stroke();
+      }
+
+
+      /**
+       * Draws the shape preview on the canvas, used for live resizing of shapes.
+       * @param {object} shapeData - An object describing the shape to draw, containing shape type, start and end points, and color.
+       */
+      function drawShapePreview(shapeData) {
+        if (!shapeData) return;
+        if (shapeData.shape === 'circle') {
+          const centerX = shapeData.start.x;
+          const centerY = shapeData.start.y;
+          const radius = Math.sqrt(Math.pow(shapeData.end.x - centerX, 2) + Math.pow(shapeData.end.y - centerY, 2));
+          drawCircle(ctx, centerX, centerY, radius, shapeData.color);
+        } else if (shapeData.shape === 'square') {
+          const x = Math.min(shapeData.start.x, shapeData.end.x);
+          const y = Math.min(shapeData.start.y, shapeData.end.y);
+          const width = Math.abs(shapeData.end.x - shapeData.start.x);
+          const height = Math.abs(shapeData.end.y - shapeData.start.y);
+          drawRectangle(ctx, x, y, width, height, shapeData.color);
+        }
+      }
+
+
+      /**
        * Redraws the entire canvas from scratch based on the drawing history.
        */
       function redrawCanvas() {
@@ -411,17 +542,30 @@ const doodlePadHTML = `
         if (doodleImage) {
           ctx.drawImage(doodleImage, 0, 0, canvas.width, canvas.height);
         }
-        history.forEach(path => {
-          ctx.beginPath();
-          path.forEach(point => {
-            if(point.start) {
-              ctx.strokeStyle = point.color;
-              ctx.moveTo(point.x, point.y);
-            } else {
-              ctx.lineTo(point.x, point.y);
-            }
-          });
-          ctx.stroke();
+        history.forEach(item => {
+          if (Array.isArray(item)) { // pencil path
+            ctx.beginPath();
+            item.forEach(point => {
+              if(point.start) {
+                ctx.strokeStyle = point.color;
+                ctx.moveTo(point.x, point.y);
+              } else {
+                ctx.lineTo(point.x, point.y);
+              }
+            });
+            ctx.stroke();
+          } else if (item.shape === 'circle') {
+            const centerX = item.start.x;
+            const centerY = item.start.y;
+            const radius = Math.sqrt(Math.pow(item.end.x - centerX, 2) + Math.pow(item.end.y - centerY, 2));
+            drawCircle(ctx, centerX, centerY, radius, item.color);
+          } else if (item.shape === 'square') {
+            const x = Math.min(item.start.x, item.end.x);
+            const y = Math.min(item.start.y, item.end.y);
+            const width = Math.abs(item.end.x - item.start.x);
+            const height = Math.abs(item.end.y - item.start.y);
+            drawRectangle(ctx, x, y, width, height, item.color);
+          }
         });
       }
 
@@ -587,7 +731,7 @@ const doodlePadHTML = `
        * @param {string[]} colorPalette - An array of color strings to populate the palette.
        * @param {string} selectedColor - The color to be initially selected in the palette.
        */
-      function initializeColorPalette(colorPalette, selectedColor='red') {
+      function initializeColorPalette(colorPalette, selectedColor='white') {
         log('initializeColorPalette called');
         const paletteDiv = document.getElementById('palette');
         paletteDiv.style.display = 'flex';
@@ -605,6 +749,21 @@ const doodlePadHTML = `
         // Initialize selected color swatch visual
         setColor(selectedColor);
       }
+
+      /**
+       * Initializes the shape palette UI in the WebView.
+       */
+      function initializeShapePalette() {
+        log('initializeShapePalette called');
+        const shapePaletteDiv = document.getElementById('shape-palette');
+        shapePaletteDiv.style.display = 'flex';
+
+        document.getElementById('pencil-button').onclick = () => setDrawingShape('pencil');
+        document.getElementById('circle-button').onclick = () => setDrawingShape('circle');
+        document.getElementById('square-button').onclick = () => setDrawingShape('square');
+        setDrawingShape('pencil'); // Default to pencil
+      }
+
 
       /**
        * Loads a doodle image from a Data URI onto the canvas as a base drawing layer.
@@ -667,6 +826,7 @@ const doodlePadHTML = `
 
         if (isEditable) {
           initializeColorPalette(paletteColors, selectedColor);
+          initializeShapePalette();
         }
       }
 
@@ -733,7 +893,7 @@ export const DoodlePad = ({
 }: DoodlePadProps) => {
   const webViewRef = useRef<WebView>(null);
   const [modalVisible, setModalVisible] = useState(false);
-  const [selectedColor, setSelectedColor] = useState<string>("red");
+  const [selectedColor, setSelectedColor] = useState<string>("white");
   const isEditable = setDoodleUri !== undefined;
   const [webViewReady, setWebViewReady] = useState(false);
 
