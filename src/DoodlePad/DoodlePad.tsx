@@ -17,7 +17,7 @@ interface DoodlePadProps {
    *
    * This prop accepts either an {@link AsyncState} or {@link OptionalState} tuple.
    *
-   * - **First element:** The current doodle data URI (string or null).  Represents the current state of the doodle.
+   * - **First element:** The current doodle data URI (string or null). Represents the current state of the doodle.
    * - **Second element:** The setter function for the data URI. Used to update the doodle state, triggering re-renders.
    *
    * If `doodleUri` is not provided (undefined), the component will be effectively disabled or uninitialized,
@@ -160,13 +160,15 @@ const doodlePadHTML = `
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
       body, html {
-        margin: 0; padding: 0; height: 100%; overflow: hidden; }
+        margin: 0; padding: 0; height: 100%; overflow: hidden;
+      }
       #container {
         position: relative;
         width: 100%;
         height: 100%;
         border: solid 2px grey;
         box-sizing: border-box;
+        overflow: hidden;
       }
       #bgImage {
         position: absolute;
@@ -177,6 +179,7 @@ const doodlePadHTML = `
         max-width: 100%;
         max-height: 100%;
         object-fit: contain;
+        transform-origin: top left;
       }
       #padCanvas {
         position: absolute;
@@ -189,6 +192,8 @@ const doodlePadHTML = `
         object-fit: contain;
         touch-action: none;
         background-color: transparent;
+        transform-origin: top left;
+        border: solid 1px grey;
       }
       #palette {
         position: absolute;
@@ -246,6 +251,7 @@ const doodlePadHTML = `
       </div>
     </div>
     <script>
+      const container = document.getElementById('container');
       const canvas = document.getElementById('padCanvas');
       const ctx = canvas.getContext('2d');
       ctx.lineWidth = 2;
@@ -263,74 +269,85 @@ const doodlePadHTML = `
       let drawingMode = 'pencil'; // pencil, circle, square
       let shapeStartPoint = null;
       let shapeEndPoint = null;
-      let currentShape = null; // To hold the shape data while drawing/resizing
+      let currentShape = null;
       let selectedShapeButton = null;
 
+      // Zoom and Pan Variables
+      let zoom = 1;           // Initial zoom level (1x)
+      let panX = 0;           // Horizontal pan offset in pixels
+      let panY = 0;           // Vertical pan offset in pixels
+      let isPanning = false;  // Flag to track panning state
+      let startPanX = 0;      // Starting panX for drag
+      let startPanY = 0;      // Starting panY for drag
+      let startMouseX = 0;    // Starting mouse X for drag
+      let startMouseY = 0;    // Starting mouse Y for drag
+      let initialDistance = null; // Initial distance for pinch zoom
+      let initialZoom = null;     // Initial zoom for pinch zoom
+
       /**
-       * Logs messages to the console and relays them to the React Native side via WebView messaging.
-       *
-       * This function is used for debugging purposes within the WebView. It outputs messages to the WebView's
-       * console and also sends a stringified JSON message to the React Native side, allowing logs to be captured
-       * in the React Native environment as well.
-       *
-       * @param {...*} args - Arguments to be logged. These can be of any type and will be stringified for messaging.
+       * Logs messages to the React Native WebView.
+       * @param {...any} args - Arguments to log.
        */
       function log(...args) {
-        // console.log(...args); // Keep console.log for WebView's own console
-        window.ReactNativeWebView.postMessage(JSON.stringify({ source: 'webview-log', payload: args })); // Relay log to RN
+        window.ReactNativeWebView.postMessage(JSON.stringify({ source: 'webview-log', payload: args }));
       }
 
       /**
-       * Sets the current drawing color, updates the canvas context's stroke style, and reflects the selection in the color palette UI.
-       *
-       * @param {string} color - The color to set for drawing. This should be a valid CSS color string (e.g., 'red', '#00FF00', 'rgb(0, 0, 255)').
+       * Sets the current drawing color and updates the selected swatch.
+       * @param {string} color - The color to set (e.g., 'red', '#FF0000').
        */
       function setColor(color) {
-        log('setColor called with color:', color);
         currentColor = color;
         ctx.strokeStyle = currentColor;
-        log('ctx.strokeStyle set to:', ctx.strokeStyle);
-
-        // Update selected swatch visual feedback
-        if (selectedSwatch) {
-          selectedSwatch.classList.remove('selected');
-        }
+        if (selectedSwatch) selectedSwatch.classList.remove('selected');
         selectedSwatch = document.querySelector(\`.color-swatch[data-color="\${color}"]\`);
-        if (selectedSwatch) {
-          selectedSwatch.classList.add('selected');
-        }
+        if (selectedSwatch) selectedSwatch.classList.add('selected');
       }
 
       /**
-       * Sets the current drawing shape mode and updates the UI to reflect the selected mode.
-       * @param {string} shape - The drawing shape mode to set ('pencil', 'circle', 'square').
+       * Sets the current drawing shape and updates the selected shape button.
+       * @param {string} shape - The shape to set ('pencil', 'circle', 'square').
        */
       function setDrawingShape(shape) {
-        log('setDrawingShape called with shape:', shape);
         drawingMode = shape;
-
-        if (selectedShapeButton) {
-          selectedShapeButton.classList.remove('selected');
-        }
+        if (selectedShapeButton) selectedShapeButton.classList.remove('selected');
         selectedShapeButton = document.getElementById(\`\${shape}-button\`);
-        if (selectedShapeButton) {
-          selectedShapeButton.classList.add('selected');
-        }
+        if (selectedShapeButton) selectedShapeButton.classList.add('selected');
       }
 
+      /**
+       * Applies zoom and pan transformations to both the background image and canvas.
+       */
+      function applyTransform() {
+        clampPan();
+        const transform = \`translate(\${panX}px, \${panY}px) scale(\${zoom})\`;
+        if (bgImage) bgImage.style.transform = transform;
+        canvas.style.transform = transform;
+      }
 
       /**
-       * Converts screen coordinates (clientX, clientY) to canvas-relative coordinates,
-       * accounting for \`object-fit: contain\` scaling.
-       *
-       * This function is essential for accurately positioning drawing strokes on the canvas, as it accounts for
-       * the canvas's position within the viewport and any potential scaling applied by CSS. It calculates the
-       * scaling factors based on the canvas's internal resolution (\`canvas.width\`, \`canvas.height\`) and its
-       * rendered size in the browser (\`rect.width\`, \`rect.height\`).
-       *
-       * @param {number} clientX - The horizontal coordinate of the event relative to the viewport.
-       * @param {number} clientY - The vertical coordinate of the event relative to the viewport.
-       * @returns {{x: number, y: number}} An object containing the \`x\` and \`y\` coordinates adjusted to be relative to the canvas drawing surface.
+       * Clamps pan values to limit panning to 50% out of bounds.
+       */
+      function clampPan() {
+        const containerRect = container.getBoundingClientRect();
+        const containerWidth = containerRect.width;
+        const containerHeight = containerRect.height;
+        const canvasRect = canvas.getBoundingClientRect();
+        const fitWidth = canvasRect.width / zoom;
+        const fitHeight = canvasRect.height / zoom;
+        const minPanX = -0.5 * fitWidth * zoom;
+        const maxPanX = containerWidth - 0.5 * fitWidth * zoom;
+        const minPanY = -0.5 * fitHeight * zoom;
+        const maxPanY = containerHeight - 0.5 * fitHeight * zoom;
+        panX = Math.max(minPanX, Math.min(maxPanX, panX));
+        panY = Math.max(minPanY, Math.min(maxPanY, panY));
+      }
+
+      /**
+       * Converts screen coordinates to canvas coordinates, accounting for zoom and pan.
+       * @param {number} clientX - The x-coordinate of the mouse or touch event.
+       * @param {number} clientY - The y-coordinate of the mouse or touch event.
+       * @returns {{x: number, y: number}} - The coordinates relative to the canvas.
        */
       function getCanvasRelativeCoords(clientX, clientY) {
         const rect = canvas.getBoundingClientRect();
@@ -350,19 +367,16 @@ const doodlePadHTML = `
         const rectAspectRatio = rectWidth / rectHeight;
 
         if (canvasAspectRatio > rectAspectRatio) {
-          // Canvas is wider than the container (or same width ratio) - vertical padding
+          // Canvas is wider than the container - vertical padding
           scaleY = scaleX; // Scale based on width to fit horizontally
           const scaledCanvasHeight = canvasHeight * (rectWidth / canvasWidth); // Height after width-based scaling
           offsetY = (rectHeight - scaledCanvasHeight) / 2; // Calculate vertical offset
         } else if (canvasAspectRatio < rectAspectRatio) {
-          // Canvas is taller than the container (or same height ratio) - horizontal padding
+          // Canvas is taller than the container - horizontal padding
           scaleX = scaleY; // Scale based on height to fit vertically
           const scaledCanvasWidth = canvasWidth * (rectHeight / canvasHeight); // Width after height-based scaling
           offsetX = (rectWidth - scaledCanvasWidth) / 2;     // Calculate horizontal offset
-        } else {
-          // Aspect ratios are the same, or very close - no offset, scales directly
         }
-
 
         return {
           x: (clientX - rect.left - offsetX) * scaleX,
@@ -371,90 +385,189 @@ const doodlePadHTML = `
       }
 
       /**
-       * Handles the start of a new drawing path when a user initiates a touch or mouse drag.
-       *
-       * @param {MouseEvent|TouchEvent} e - The event object associated with the start of the drawing action (either a mouse or touch event).
+       * Starts drawing or panning based on the mouse button pressed.
+       * @param {MouseEvent} e - The mouse event.
        */
       function startDrawing(e) {
-        log('startDrawing event:', e.type, 'mode:', drawingMode);
-        drawing = true;
-
-        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-        const canvasCoords = getCanvasRelativeCoords(clientX, clientY);
-
-        if (drawingMode === 'pencil') {
-          ctx.beginPath(); // Ensure beginPath is called at the start
-          ctx.strokeStyle = currentColor; // Re-set strokeStyle at the start of drawing
-          ctx.lineWidth = 2; // Re-set lineWidth at the start of drawing
-          ctx.lineCap = 'round'; // Re-set lineCap at the start of drawing
-
-          log('startDrawing pencil coords:', { clientX, clientY, canvasCoords });
-          ctx.moveTo(canvasCoords.x, canvasCoords.y);
-          currentPath = [{ x: canvasCoords.x, y: canvasCoords.y, start: true, color: currentColor }];
-        } else if (drawingMode === 'circle' || drawingMode === 'square') {
-          shapeStartPoint = canvasCoords;
-          shapeEndPoint = canvasCoords; // Initialize end point to start point for tap circles/squares
-          currentShape = { shape: drawingMode, start: shapeStartPoint, end: shapeEndPoint, color: currentColor };
+        e.preventDefault(); // Prevent selection
+        if (e.type === 'mousedown') {
+          if (e.button === 0) { // Left-click for drawing
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            if (x >= 0 && x < rect.width && y >= 0 && y < rect.height) {
+              drawing = true;
+              const canvasCoords = getCanvasRelativeCoords(e.clientX, e.clientY);
+              if (drawingMode === 'pencil') {
+                ctx.beginPath();
+                ctx.strokeStyle = currentColor;
+                ctx.lineWidth = 2;
+                ctx.lineCap = 'round';
+                ctx.moveTo(canvasCoords.x, canvasCoords.y);
+                currentPath = [{ x: canvasCoords.x, y: canvasCoords.y, start: true, color: currentColor }];
+              } else if (drawingMode === 'circle' || drawingMode === 'square') {
+                shapeStartPoint = canvasCoords;
+                shapeEndPoint = canvasCoords;
+                currentShape = { shape: drawingMode, start: shapeStartPoint, end: shapeEndPoint, color: currentColor };
+              }
+            }
+          } else if (e.button === 2) { // Right-click for panning
+            isPanning = true;
+            startPanX = panX;
+            startPanY = panY;
+            startMouseX = e.clientX;
+            startMouseY = e.clientY;
+          }
         }
       }
 
       /**
-       * Handles the drawing process as the user moves their touch or mouse while drawing.
-       *
-       * @param {MouseEvent|TouchEvent} e - The event object associated with the move action during drawing (mouse or touch move event).
+       * Handles drawing or panning while the mouse moves.
+       * @param {MouseEvent} e - The mouse event.
        */
       function draw(e) {
-        if (!drawing) return;
-        log('draw event:', e.type, 'mode:', drawingMode);
-
-        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-        const canvasCoords = getCanvasRelativeCoords(clientX, clientY);
-
-        if (drawingMode === 'pencil') {
-          log('draw pencil coords:', { clientX, clientY, canvasCoords });
-          ctx.lineTo(canvasCoords.x, canvasCoords.y);
-          ctx.stroke();
-          currentPath.push({ x: canvasCoords.x, y: canvasCoords.y, color: currentColor });
-        } else if (drawingMode === 'circle' || drawingMode === 'square') {
-          shapeEndPoint = canvasCoords;
-          currentShape.end = shapeEndPoint;
-          redrawCanvas(); // Redraw history and current shape preview
-          drawShapePreview(currentShape);
+        e.preventDefault(); // Prevent selection
+        if (drawing) {
+          const canvasCoords = getCanvasRelativeCoords(e.clientX, e.clientY);
+          if (drawingMode === 'pencil') {
+            ctx.lineTo(canvasCoords.x, canvasCoords.y);
+            ctx.stroke();
+            currentPath.push({ x: canvasCoords.x, y: canvasCoords.y, color: currentColor });
+          } else if (drawingMode === 'circle' || drawingMode === 'square') {
+            shapeEndPoint = canvasCoords;
+            currentShape.end = shapeEndPoint;
+            redrawCanvas();
+            drawShapePreview(currentShape);
+          }
+        } else if (isPanning) {
+          const dx = e.clientX - startMouseX;
+          const dy = e.clientY - startMouseY;
+          panX = startPanX + dx;
+          panY = startPanY + dy;
+          applyTransform();
         }
       }
 
       /**
-       * Handles the end of a drawing path when the user lifts their touch or releases the mouse button.
+       * Ends drawing or panning when the mouse is released.
+       * @param {MouseEvent} e - The mouse event.
        */
-      function endDrawing() {
-        log('endDrawing event, mode:', drawingMode);
+      function endDrawing(e) {
+        e.preventDefault(); // Prevent selection
         if (drawing) {
           if (drawingMode === 'pencil') {
             history.push(currentPath);
           } else if (drawingMode === 'circle' || drawingMode === 'square') {
             if (currentShape) {
               history.push(currentShape);
-              currentShape = null; // Clear current shape after adding to history
+              currentShape = null;
             }
           }
+          drawing = false;
+          shapeStartPoint = null;
+          shapeEndPoint = null;
         }
-        drawing = false;
-        shapeStartPoint = null;
-        shapeEndPoint = null;
+        if (isPanning) {
+          isPanning = false;
+        }
       }
 
-      canvas.addEventListener('touchstart', startDrawing);
-      canvas.addEventListener('touchmove', draw);
-      canvas.addEventListener('touchend', endDrawing);
-      canvas.addEventListener('mousedown', startDrawing);
-      canvas.addEventListener('mousemove', draw);
-      canvas.addEventListener('mouseup', endDrawing);
-      canvas.addEventListener('mouseleave', endDrawing);
+      /**
+       * Handles mouse wheel zooming, centering on the cursor position.
+       * @param {WheelEvent} e - The wheel event.
+       */
+      function handleWheel(e) {
+        e.preventDefault();
+        const delta = e.deltaY;
+        const zoomFactor = 1.1;
+        const prevZoom = zoom;
+        let newZoom = delta > 0 ? zoom / zoomFactor : zoom * zoomFactor;
+        newZoom = Math.max(0.5, Math.min(16, newZoom));
+
+        // Calculate cursor position relative to container
+        const containerRect = container.getBoundingClientRect();
+        const cursorX = e.clientX - containerRect.left;
+        const cursorY = e.clientY - containerRect.top;
+
+        // Adjust pan to keep the cursor point stationary
+        panX = cursorX - (cursorX - panX) * (newZoom / prevZoom);
+        panY = cursorY - (cursorY - panY) * (newZoom / prevZoom);
+
+        zoom = newZoom;
+        applyTransform();
+      }
 
       /**
-       * Clears the entire canvas, removing all drawings and resetting the drawing history.
+       * Handles touch start for pinch zoom and panning.
+       * @param {TouchEvent} e - The touch event.
+       */
+      function handleTouchStart(e) {
+        if (e.touches.length === 2) {
+          const touch1 = e.touches[0];
+          const touch2 = e.touches[1];
+          initialDistance = Math.hypot(touch2.clientX - touch1.clientX, touch2.clientY - touch1.clientY);
+          initialZoom = zoom;
+          isPanning = false;
+        } else if (e.touches.length === 1) {
+          isPanning = true;
+          startPanX = panX;
+          startPanY = panY;
+          startMouseX = e.touches[0].clientX;
+          startMouseY = e.touches[0].clientY;
+        }
+      }
+
+      /**
+       * Handles touch move for pinch zoom and panning.
+       * @param {TouchEvent} e - The touch event.
+       */
+      function handleTouchMove(e) {
+        if (e.touches.length === 2 && initialDistance !== null) {
+          const touch1 = e.touches[0];
+          const touch2 = e.touches[1];
+          const currentDistance = Math.hypot(touch2.clientX - touch1.clientX, touch2.clientY - touch1.clientY);
+          const scale = currentDistance / initialDistance;
+          let newZoom = initialZoom * scale;
+          newZoom = Math.max(0.5, Math.min(16, newZoom));
+          zoom = newZoom;
+          applyTransform();
+        } else if (e.touches.length === 1 && isPanning) {
+          const dx = e.touches[0].clientX - startMouseX;
+          const dy = e.touches[0].clientY - startMouseY;
+          panX = startPanX + dx;
+          panY = startPanY + dy;
+          applyTransform();
+        }
+      }
+
+      /**
+       * Handles touch end or cancel for pinch zoom and panning.
+       * @param {TouchEvent} e - The touch event.
+       */
+      function handleTouchEnd(e) {
+        if (e.touches.length < 2) {
+          initialDistance = null;
+          initialZoom = null;
+        }
+        if (e.touches.length === 0) {
+          isPanning = false;
+        }
+      }
+
+      // Event Listeners
+      container.addEventListener('wheel', handleWheel);
+      container.addEventListener('mousedown', startDrawing);
+      container.addEventListener('mousemove', draw);
+      container.addEventListener('mouseup', endDrawing);
+      container.addEventListener('mouseleave', endDrawing);
+      container.addEventListener('touchstart', handleTouchStart);
+      container.addEventListener('touchmove', handleTouchMove);
+      container.addEventListener('touchend', handleTouchEnd);
+      container.addEventListener('touchcancel', handleTouchEnd);
+      container.addEventListener('contextmenu', (e) => e.preventDefault());
+
+      /**
+       * Clears the canvas and resets the drawing history.
        */
       function clearCanvas() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -465,12 +578,11 @@ const doodlePadHTML = `
           doodleImage.remove();
           doodleImage = null;
         }
-        // After clearing, reset canvas dimensions based on background image or default
         handleBackgroundImage(bgImage?.src || null, Number(canvas.dataset.width), Number(canvas.dataset.height));
       }
 
       /**
-       * Undoes the last drawing action by removing the most recent path from the history and redrawing the canvas.
+       * Undoes the last drawing action.
        */
       function undoCanvas() {
         if (history.length > 0) {
@@ -480,8 +592,8 @@ const doodlePadHTML = `
       }
 
       /**
-       * Draws a circle on the canvas context.
-       * @param {CanvasRenderingContext2D} context - The canvas 2D rendering context.
+       * Draws a circle on the canvas.
+       * @param {CanvasRenderingContext2D} context - The canvas context.
        * @param {number} centerX - The x-coordinate of the circle's center.
        * @param {number} centerY - The y-coordinate of the circle's center.
        * @param {number} radius - The radius of the circle.
@@ -496,8 +608,8 @@ const doodlePadHTML = `
       }
 
       /**
-       * Draws a rectangle on the canvas context.
-       * @param {CanvasRenderingContext2D} context - The canvas 2D rendering context.
+       * Draws a rectangle on the canvas.
+       * @param {CanvasRenderingContext2D} context - The canvas context.
        * @param {number} x - The x-coordinate of the rectangle's top-left corner.
        * @param {number} y - The y-coordinate of the rectangle's top-left corner.
        * @param {number} width - The width of the rectangle.
@@ -512,10 +624,9 @@ const doodlePadHTML = `
         context.stroke();
       }
 
-
       /**
-       * Draws the shape preview on the canvas, used for live resizing of shapes.
-       * @param {object} shapeData - An object describing the shape to draw, containing shape type, start and end points, and color.
+       * Draws a preview of the current shape being drawn.
+       * @param {Object} shapeData - The shape data containing shape type, start, end, and color.
        */
       function drawShapePreview(shapeData) {
         if (!shapeData) return;
@@ -533,9 +644,8 @@ const doodlePadHTML = `
         }
       }
 
-
       /**
-       * Redraws the entire canvas from scratch based on the drawing history.
+       * Redraws the entire canvas based on the drawing history.
        */
       function redrawCanvas() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -543,10 +653,10 @@ const doodlePadHTML = `
           ctx.drawImage(doodleImage, 0, 0, canvas.width, canvas.height);
         }
         history.forEach(item => {
-          if (Array.isArray(item)) { // pencil path
+          if (Array.isArray(item)) { // Pencil path
             ctx.beginPath();
             item.forEach(point => {
-              if(point.start) {
+              if (point.start) {
                 ctx.strokeStyle = point.color;
                 ctx.moveTo(point.x, point.y);
               } else {
@@ -570,7 +680,7 @@ const doodlePadHTML = `
       }
 
       /**
-       * Saves the current canvas content as a Data URL and sends it back to the React Native side.
+       * Saves the current canvas as a PNG data URL and sends it to React Native.
        */
       function saveCanvas() {
         const dataUrl = canvas.toDataURL('image/png');
@@ -578,225 +688,167 @@ const doodlePadHTML = `
       }
 
       /**
-       * Calculates the aspect ratio (width divided by height) of given dimensions.
-       *
-       * @param {number} width - The width value.
-       * @param {number} height - The height value.
-       * @returns {number} The aspect ratio, calculated as \`width / height\`. Returns \`NaN\` if height is zero.
+       * Calculates the aspect ratio of a given width and height.
+       * @param {number} width - The width.
+       * @param {number} height - The height.
+       * @returns {number} - The aspect ratio (width / height).
        */
       function getAspectRatio(width, height) {
         return width / height;
       }
 
       /**
-       * Calculates scaled dimensions (width and height) to fit within optional maximum constraints while preserving aspect ratio.
-       *
-       * This function is useful for resizing images or canvas dimensions to fit within a specified area without distortion.
-       * It takes source dimensions and optional maximum width and/or height constraints. If both constraints are provided,
-       * it ensures that the scaled dimensions fit within both. If only one constraint is given, it scales based on that constraint
-       * and maintains the aspect ratio. If no constraints are provided, it returns the original dimensions. The function uses
-       * {@link getAspectRatio} to maintain the correct proportions during scaling.
-       *
-       * @param {number} srcWidth The original width of the source image or content.
-       * @param {number} srcHeight The original height of the source image or content.
-       * @param {number | null} maxWidth The maximum allowed width, or null if unconstrained horizontally.
-       * @param {number | null} maxHeight The maximum allowed height, or null if unconstrained vertically.
-       * @returns {{width: number, height: number}} An object containing the scaled width and height, rounded to the nearest integer.
+       * Scales dimensions while preserving aspect ratio based on max constraints.
+       * @param {number} srcWidth - The source width.
+       * @param {number} srcHeight - The source height.
+       * @param {number|null} maxWidth - The maximum width constraint.
+       * @param {number|null} maxHeight - The maximum height constraint.
+       * @returns {{width: number, height: number}} - The scaled dimensions.
        */
       function getScaledDimensions(srcWidth, srcHeight, maxWidth, maxHeight) {
         const srcRatio = getAspectRatio(srcWidth, srcHeight);
         let scaledWidth = srcWidth;
         let scaledHeight = srcHeight;
-
         if (maxWidth != null && maxHeight != null) {
-          // Both width and height constraints are provided
           const maxRatio = getAspectRatio(maxWidth, maxHeight);
           if (srcRatio > maxRatio) {
-            // Source is wider than max ratio, fit to maxWidth
             scaledWidth = maxWidth;
             scaledHeight = scaledWidth / srcRatio;
           } else {
-            // Source is taller or same ratio, fit to maxHeight
             scaledHeight = maxHeight;
             scaledWidth = scaledHeight * srcRatio;
           }
         } else if (maxWidth != null) {
-          // Only maxWidth is provided, scale height based on aspect ratio
           scaledWidth = maxWidth;
           scaledHeight = scaledWidth / srcRatio;
         } else if (maxHeight != null) {
-          // Only maxHeight is provided, scale width based on aspect ratio
           scaledHeight = maxHeight;
           scaledWidth = scaledHeight * srcRatio;
         }
-        return { width: Math.round(scaledWidth), height: Math.round(scaledHeight) }; // Round to avoid subpixel issues
+        return { width: Math.round(scaledWidth), height: Math.round(scaledHeight) };
       }
 
       /**
-       * Determines and sets the canvas dimensions based on provided width, height, and background image availability.
-       *
-       * This function calculates and applies the appropriate width and height to the canvas element (\`canvas\`).
-       * It prioritizes explicitly provided \`width\` and \`height\` props. If these are not given but a \`backgroundImage\`
-       * is available, it sizes the canvas to match the image's aspect ratio, ensuring the entire image is visible within
-       * the canvas. If neither dimensions nor a background image are provided, it defaults to predefined dimensions (300x200).
-       * It also stores the calculated canvas dimensions as data attributes on the canvas for later use (e.g., resetting on clear).
-       * If a background image is present, it ensures that the image's style is set to fill the new canvas dimensions.
-       *
-       * @param {number | null} providedWidth - The width provided as a prop, or null if not provided.
-       * @param {number | null} providedHeight - The height provided as a prop, or null if not provided.
-       * @param {HTMLImageElement | null} backgroundImage - The background image element, if available, or null.
+       * Sets the canvas dimensions based on provided values or background image aspect ratio.
+       * @param {number|null} providedWidth - The desired width.
+       * @param {number|null} providedHeight - The desired height.
+       * @param {HTMLImageElement|null} backgroundImage - The background image element.
        */
       function setCanvasDimensions(providedWidth, providedHeight, backgroundImage) {
-        log('setCanvasDimensions called with:', { providedWidth, providedHeight, backgroundImage });
         let targetWidth = providedWidth !== null ? Number(providedWidth) : null;
         let targetHeight = providedHeight !== null ? Number(providedHeight) : null;
         let bgWidth = backgroundImage ? backgroundImage.naturalWidth : null;
         let bgHeight = backgroundImage ? backgroundImage.naturalHeight : null;
-
         if (targetWidth && targetHeight) {
-          // Width and height are explicitly provided, use them directly.
           canvasResWidth = targetWidth;
           canvasResHeight = targetHeight;
         } else if (backgroundImage && bgWidth && bgHeight) {
-          // Background image is available, and no explicit dimensions provided, scale canvas to image aspect ratio.
           const scaledDimensions = getScaledDimensions(bgWidth, bgHeight, targetWidth || null, targetHeight || null);
           canvasResWidth = scaledDimensions.width;
           canvasResHeight = scaledDimensions.height;
         } else {
-          // No background image or explicit dimensions, use default dimensions.
           canvasResWidth = 300;
           canvasResHeight = 200;
         }
-
         canvas.width = canvasResWidth;
         canvas.height = canvasResHeight;
-        canvas.dataset.width = canvasResWidth; // Store for reset on clearCanvas
-        canvas.dataset.height = canvasResHeight; // Store for reset on clearCanvas
-        log('Canvas dimensions set to:', canvas.width, canvas.height);
-
-        // If background image exists, ensure it's resized to fit the new canvas dimensions.
+        canvas.dataset.width = canvasResWidth;
+        canvas.dataset.height = canvasResHeight;
         if (bgImage) {
-          bgImage.style.width = '100%'; // Ensure bgImage resizes to canvas width
-          bgImage.style.height = '100%'; // Ensure bgImage resizes to canvas height
+          bgImage.style.width = '100%';
+          bgImage.style.height = '100%';
         }
       }
 
       /**
-       * Handles the loading and management of the background image for the doodle pad.
-       *
-       * @param {string} backgroundUri - The URI (typically a Data URI) of the background image to load. Can be null or undefined to remove the background image.
-       * @param {number} providedWidth - The width provided as a prop, used as a hint for canvas dimensioning.
-       * @param {number} providedHeight - The height provided as a prop, used as a hint for canvas dimensioning.
+       * Handles loading and setting the background image.
+       * @param {string|null} backgroundUri - The URI of the background image.
+       * @param {number|null} providedWidth - The desired width.
+       * @param {number|null} providedHeight - The desired height.
        */
       function handleBackgroundImage(backgroundUri, providedWidth, providedHeight) {
-        log('handleBackgroundImage called with URI:', backgroundUri ? backgroundUri.slice(0, 50) + '...' : backgroundUri);
-
         if (backgroundUri) {
-          log('Creating bgImage element');
           if (!bgImage) {
             bgImage = document.createElement('img');
             bgImage.id = 'bgImage';
-            document.getElementById('container').prepend(bgImage); // Add to DOM only once
+            container.prepend(bgImage);
           }
-          log('Setting bgImage.src:', backgroundUri.slice(0, 50) + '...');
           bgImage.src = backgroundUri;
-
           bgImage.onload = () => {
-            log('Background image onload triggered - SUCCESS');
-            log('Image natural dimensions:', bgImage.naturalWidth, bgImage.naturalHeight);
             setCanvasDimensions(providedWidth, providedHeight, bgImage);
-            redrawCanvas(); // Redraw to ensure doodle is on top of new background
-            log('bgImage loaded and canvas resized.');
+            redrawCanvas();
+            applyTransform();
           };
-
           bgImage.onerror = (error) => {
-            log('Background image onerror triggered - FAILURE', error);
-            setCanvasDimensions(providedWidth, providedHeight, null); // Set canvas dimensions even if bgImage fails, defaulting to props or default
-            log('Canvas dimensions set (onerror) to:', canvas.width, canvas.height);
+            log('doodlePadHTML_handleBackgroundImageE1', error);
+            setCanvasDimensions(providedWidth, providedHeight, null);
           };
         } else {
-          log('No backgroundUri provided, setting canvas dimensions directly.');
           setCanvasDimensions(providedWidth, providedHeight, null);
-          if (bgImage) { // Remove bgImage if no backgroundUri is provided anymore.
+          if (bgImage) {
             bgImage.remove();
             bgImage = null;
           }
-          log('Canvas dimensions set (no bgImage) to:', canvas.width, canvas.height);
         }
       }
 
       /**
-       * Initializes the color palette UI in the WebView.
-       *
-       * @param {string[]} colorPalette - An array of color strings to populate the palette.
-       * @param {string} selectedColor - The color to be initially selected in the palette.
+       * Initializes the color palette with provided colors.
+       * @param {string[]} colorPalette - Array of color strings.
+       * @param {string} [selectedColor='white'] - The initially selected color.
        */
-      function initializeColorPalette(colorPalette, selectedColor='white') {
-        log('initializeColorPalette called');
+      function initializeColorPalette(colorPalette, selectedColor = 'white') {
         const paletteDiv = document.getElementById('palette');
         paletteDiv.style.display = 'flex';
         if (colorPalette) {
-          paletteDiv.innerHTML = ''; // Clear existing palette if any
+          paletteDiv.innerHTML = '';
           colorPalette.forEach(color => {
             const swatch = document.createElement('div');
             swatch.className = 'color-swatch';
             swatch.style.backgroundColor = color;
-            swatch.dataset.color = color; // Store color in data attribute
-            swatch.onclick = () => { setColor(color); };
+            swatch.dataset.color = color;
+            swatch.onclick = () => setColor(color);
             paletteDiv.appendChild(swatch);
           });
         }
-        // Initialize selected color swatch visual
         setColor(selectedColor);
       }
 
       /**
-       * Initializes the shape palette UI in the WebView.
+       * Initializes the shape palette and sets the default shape.
        */
       function initializeShapePalette() {
-        log('initializeShapePalette called');
         const shapePaletteDiv = document.getElementById('shape-palette');
         shapePaletteDiv.style.display = 'flex';
-
         document.getElementById('pencil-button').onclick = () => setDrawingShape('pencil');
         document.getElementById('circle-button').onclick = () => setDrawingShape('circle');
         document.getElementById('square-button').onclick = () => setDrawingShape('square');
-        setDrawingShape('pencil'); // Default to pencil
+        setDrawingShape('pencil');
       }
 
-
       /**
-       * Loads a doodle image from a Data URI onto the canvas as a base drawing layer.
-       *
-       * @param {string} doodleUri - The Data URI of the doodle image to load. Can be null or undefined to clear any loaded doodle image.
+       * Loads a doodle image onto the canvas.
+       * @param {string|null} doodleUri - The URI of the doodle image.
        */
       function loadDoodleImage(doodleUri) {
-        log('loadDoodleImage called with URI:', doodleUri ? doodleUri.slice(0, 50) + '...' : doodleUri);
         if (doodleUri) {
           if (!doodleImage) {
             doodleImage = document.createElement('img');
             doodleImage.id = 'doodleImage';
           }
           doodleImage.src = doodleUri;
-          doodleImage.onload = () => {
-            log('Doodle image loaded.');
-            redrawCanvas(); // Redraw to ensure doodle is on top, and new doodle is displayed.
-          };
-          doodleImage.onerror = (error) => {
-            log('Error loading doodle image:', error);
-          };
+          doodleImage.onload = () => redrawCanvas();
+          doodleImage.onerror = (error) => log('doodlePadHTML_loadDoodleImageE1', error);
         } else if (doodleImage) {
-          doodleImage.remove(); // Remove doodle image if no doodleUri is provided.
+          doodleImage.remove();
           doodleImage = null;
-          redrawCanvas(); // Redraw to clear any old doodle.
+          redrawCanvas();
         }
       }
 
-
       /**
-       * Handles the 'init' message received from the React Native side, initializing the doodle pad WebView.
-       *
-       * @param {object} messageData - An object containing the initialization data sent from React Native. Expected properties include:
+       * Handles initialization messages from React Native.
+       * @param {Object} messageData - The initialization data.
        *   - \`width\`: Canvas width.
        *   - \`height\`: Canvas height.
        *   - \`backgroundUri\`: Data URI for the background image.
@@ -807,9 +859,6 @@ const doodlePadHTML = `
        *   - \`selectedColor\`: Initial selected color.
        */
       function handleInitMessage(messageData) {
-        log('handleInitMessage called with:', messageData);
-
-        // Parse width and height as numbers, defaulting to null if not provided.
         let providedWidth = messageData.width !== undefined ? Number(messageData.width) : null;
         let providedHeight = messageData.height !== undefined ? Number(messageData.height) : null;
         const backgroundUri = messageData.backgroundUri;
@@ -823,28 +872,27 @@ const doodlePadHTML = `
         handleBackgroundImage(backgroundUri, providedWidth, providedHeight);
         loadDoodleImage(doodleUri);
 
-
         if (isEditable) {
           initializeColorPalette(paletteColors, selectedColor);
           initializeShapePalette();
         }
+        applyTransform();
       }
 
-      const onMessage=(event) => {
+      const onMessage = (event) => {
         if (event.data && typeof event.data === 'string') {
           try {
             const messageData = JSON.parse(event.data);
             if (messageData && messageData.source !== 'react-devtools-bridge') {
               if (messageData.type === 'init') {
-                log('init message received in WebView:', messageData); // Keep this log
                 handleInitMessage(messageData);
               }
             }
           } catch (error) {
-            log("Error parsing message in WebView:", event.data, error);
+            log("doodlePadHTML_onMessageE1", event.data, error);
           }
         }
-      }
+      };
       window.addEventListener('message', onMessage);
       document.addEventListener('message', onMessage);
     </script>
