@@ -11,6 +11,7 @@ export * from "./gps/index.js";
 export * from "./makeDatabaseTestScreen.js";
 export * from "./NavButton.js";
 export * from "./pickDocument.js";
+export * from "./pickUriList.js";
 export * from "./signature/index.js";
 export * from "./SplashLoader.js";
 export * from "./StyledColorPicker.js";
