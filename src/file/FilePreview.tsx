@@ -11,6 +11,7 @@ import {
 import { asDataUri, getMimeTypeFromDataUri } from "@dwidge/file-cache-expo";
 import { useBufferedState } from "@dwidge/hooks-react";
 import { Image } from "@rneui/themed";
+import { exportDataUri } from "../exportDataUri";
 
 const useDataUriCache = (dataUri: string | null | undefined) =>
   useBufferedState<string | null | undefined>([dataUri, () => {}]);
@@ -43,7 +44,7 @@ export const FilePreview = ({
         console.log("FilePreviewE1", e.nativeEvent.error),
         setDataUriCache?.(() => "")
       )}
-      // onPress={() => Linking.openURL(dataUriCache)}
+      onPress={dataUriCache ? () => exportDataUri(dataUriCache) : undefined}
     />
   ) : (
     <CenterView overflowHidden>
@@ -51,7 +52,7 @@ export const FilePreview = ({
         name={getFontAwesomeGlyphFromMime(
           getMimeTypeFromDataUri(asDataUri(dataUriCache)),
         )}
-        // onPress={() => Linking.openURL(dataUriCache)}
+        onPress={dataUriCache ? () => exportDataUri(dataUriCache) : undefined}
       />
     </CenterView>
   );
