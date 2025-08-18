@@ -7,7 +7,8 @@ import { asDataUri, DataUri } from "@dwidge/file-cache-expo";
 import { AsyncState, OptionalState, useAsyncState } from "@dwidge/hooks-react";
 import { WebView } from "@dwidge/react-native-web-webview";
 import { useRef, useState } from "react";
-import { Button, Image, Modal, TouchableOpacity, View } from "react-native";
+import { Button, Image, Modal, View } from "react-native";
+import { OptionalTouchable } from "./OptionalTouchable";
 
 /**
  * Interface for the SignaturePad component props.
@@ -177,25 +178,15 @@ export const SignaturePad = ({
 
   return (
     <View style={{ flex: 1 }}>
-      <TouchableOpacity onPress={() => setModalVisible(true)}>
+      <OptionalTouchable
+        onPress={setDataUri ? () => setModalVisible(true) : undefined}
+      >
         {dataUri ? (
-          <View style={{ height }}>
-            <Image
-              source={{ uri: dataUri }}
-              style={{ flex: 1, backgroundColor: "#ccc" }}
-              resizeMode="contain"
-            />
-          </View>
-        ) : setDataUri ? (
-          <StyledText outline pad center>
-            Tap to add signature
-          </StyledText>
+          <SigImage dataUri={dataUri} height={height} />
         ) : (
-          <StyledText outline pad center>
-            No signature
-          </StyledText>
+          <NoSigImage setDataUri={setDataUri} />
         )}
-      </TouchableOpacity>
+      </OptionalTouchable>
       <Modal visible={modalVisible} animationType="slide">
         <View style={{ flex: 1, height: height, padding: 10 }}>
           <WebView
@@ -222,3 +213,29 @@ export const SignaturePad = ({
     </View>
   );
 };
+
+const SigImage = ({
+  dataUri,
+  height,
+}: {
+  dataUri: DataUri;
+  height: number;
+}) => (
+  <View style={{ height }}>
+    <Image
+      source={{ uri: dataUri }}
+      style={{ flex: 1, backgroundColor: "#ccc" }}
+      resizeMode="contain"
+    />
+  </View>
+);
+
+const NoSigImage = ({
+  setDataUri,
+}: {
+  setDataUri?: (v: DataUri | null) => unknown;
+}) => (
+  <StyledText outline pad center>
+    No signature {setDataUri ? "(Tap to add)" : ""}
+  </StyledText>
+);
