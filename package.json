@@ -1,6 +1,6 @@
 {
   "name": "@dwidge/components-expo",
-  "version": "0.0.42",
+  "version": "0.0.43",
   "description": "A collection of Expo components and utilities.",
   "repository": "github:dwidge/components-expo",
   "main": "./dist/cjs/index.js",
@@ -24,7 +24,7 @@
   "peerDependencies": {
     "@dwidge/components-rnw": "^0.0.29",
     "@dwidge/fallback-rnw": "^0.0.5",
-    "@dwidge/file-cache-expo": "^0.0.21",
+    "@dwidge/file-cache-expo": "^0.0.22",
     "@dwidge/hooks-expo": "^0.0.34",
     "@dwidge/hooks-react": "^0.0.23",
     "@dwidge/react-native-web-webview": "^0.0.5",
