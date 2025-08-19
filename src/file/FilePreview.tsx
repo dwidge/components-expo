@@ -19,6 +19,7 @@ const useDataUriCache = (dataUri: string | null | undefined) =>
 export const FilePreview = ({
   dataUri = undefined as string | null | undefined,
   dataUriCache: [dataUriCache, setDataUriCache] = useDataUriCache(dataUri),
+  name = undefined as string | null | undefined,
 }): JSX.Element =>
   dataUriCache === "" ? (
     <CenterView overflowHidden>
@@ -44,7 +45,11 @@ export const FilePreview = ({
         console.log("FilePreviewE1", e.nativeEvent.error),
         setDataUriCache?.(() => "")
       )}
-      onPress={dataUriCache ? () => exportDataUri(dataUriCache) : undefined}
+      onPress={
+        dataUriCache
+          ? () => exportDataUri(dataUriCache, name ?? undefined)
+          : undefined
+      }
     />
   ) : (
     <CenterView overflowHidden>
@@ -52,7 +57,11 @@ export const FilePreview = ({
         name={getFontAwesomeGlyphFromMime(
           getMimeTypeFromDataUri(asDataUri(dataUriCache)),
         )}
-        onPress={dataUriCache ? () => exportDataUri(dataUriCache) : undefined}
+        onPress={
+          dataUriCache
+            ? () => exportDataUri(dataUriCache, name ?? undefined)
+            : undefined
+        }
       />
     </CenterView>
   );
