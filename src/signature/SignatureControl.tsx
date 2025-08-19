@@ -5,7 +5,7 @@
 import { StyledButton, StyledLoader, StyledView } from "@dwidge/components-rnw";
 import { ErrorFallback } from "@dwidge/fallback-rnw";
 import { useOptionalState } from "@dwidge/hooks-react";
-import { useContext } from "react";
+import React, { useContext } from "react";
 import ErrorBoundary from "react-native-error-boundary";
 import { FileApiContext, useFileUri } from "../file";
 import { StyledDate } from "../StyledDate";
@@ -30,8 +30,8 @@ const SignatureControlInternal = ({
           mime: undefined,
         }
       : data === null
-        ? null
-        : undefined,
+      ? null
+      : undefined
   ),
 }) => (
   <ErrorBoundary FallbackComponent={ErrorFallback}>
@@ -42,12 +42,12 @@ const SignatureControlInternal = ({
           setData &&
           ((
             dataPrev,
-            dataNext = typeof dataPrev === "function" ? dataPrev({}) : dataPrev,
+            dataNext = typeof dataPrev === "function" ? dataPrev({}) : dataPrev
           ) =>
             setFile(dataNext).then(
               (
                 keyPrev,
-                keyNext = typeof keyPrev === "function" ? keyPrev({}) : keyPrev,
+                keyNext = typeof keyPrev === "function" ? keyPrev({}) : keyPrev
               ) => (
                 setData(
                   keyNext && dataNext
@@ -57,10 +57,10 @@ const SignatureControlInternal = ({
                         mime: dataNext.mime,
                         timestamp: new Date().getTime(),
                       }
-                    : null,
+                    : null
                 ),
                 keyNext
-              ),
+              )
             )),
       ]}
       onPressCreate={
@@ -70,8 +70,8 @@ const SignatureControlInternal = ({
           setFile({}).then(
             (
               keyPrev,
-              keyNext = typeof keyPrev === "function" ? keyPrev({}) : keyPrev,
-            ) => (keyNext && setData(keyNext), keyNext),
+              keyNext = typeof keyPrev === "function" ? keyPrev({}) : keyPrev
+            ) => (keyNext && setData(keyNext), keyNext)
           ))
       }
       onPressDelete={
@@ -88,12 +88,12 @@ const SignatureEdit = ({
     async (): Promise<{ id?: string } | null | undefined> => {
       console.log("onPressCreate1");
       return undefined;
-    },
+    }
   ),
   onPressDelete = optional(async () => {
     console.log("onPressDelete1");
   }),
-}): JSX.Element => (
+}): React.JSX.Element => (
   <StyledView flex card column>
     {file === undefined ? (
       <StyledLoader />
@@ -130,8 +130,8 @@ const SignatureEdit = ({
                 setFileUri(
                   typeof uri === "function"
                     ? uri(fileUri ?? null)
-                    : (uri ?? null),
-                  "image/png",
+                    : uri ?? null,
+                  "image/png"
                 )),
           ]}
         />

@@ -2,6 +2,8 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
+import React from "react";
+
 import { CenterView, StyledLoader, StyledText } from "@dwidge/components-rnw";
 import { getFontAwesomeGlyphFromMime } from "@dwidge/components-rnw";
 import { Image } from "@rneui/themed";
@@ -16,7 +18,7 @@ const useDataUriCache = (dataUri: string | null | undefined) =>
 export const FilePreview = ({
   dataUri = undefined as string | null | undefined,
   dataUriCache: [dataUriCache, setDataUriCache] = useDataUriCache(dataUri),
-}): JSX.Element =>
+}): React.JSX.Element =>
   dataUriCache === "" ? (
     <CenterView overflowHidden>
       <StyledFontAwesome name={"warning"} />

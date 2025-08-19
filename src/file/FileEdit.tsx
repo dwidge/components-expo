@@ -8,7 +8,7 @@ import {
   StyledText,
   StyledView,
 } from "@dwidge/components-rnw";
-import { useState } from "react";
+import React, { useState } from "react";
 import { Platform, TouchableOpacity } from "react-native";
 import { exportUri } from "../exportUri.js";
 import { getMediaFromCamera } from "../getMediaFromLibrary.js";
@@ -45,7 +45,7 @@ export const FileEdit = ({
     async (): Promise<{ id?: string } | null | undefined> => {
       console.log("onPressCreate1");
       return undefined;
-    },
+    }
   ),
   onPressDelete = optional(async () => {
     console.log("onPressDelete1");
@@ -70,7 +70,7 @@ export const FileEdit = ({
   onPressPreview = optional(async () => {
     setModalVisible(true);
   }),
-}): JSX.Element => (
+}): React.JSX.Element => (
   <StyledView flex card column>
     {file === undefined ? (
       <StyledLoader />
