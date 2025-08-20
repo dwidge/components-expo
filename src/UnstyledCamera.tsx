@@ -1,61 +1,51 @@
-// Copyright DWJ 2024.
-// Distributed under the Boost Software License, Version 1.0.
-// https://www.boost.org/LICENSE_1_0.txt
-
 import { prioritySelect } from "@dwidge/utils-js";
 import * as assert from "assert";
-import { Camera, CameraType } from "expo-camera/legacy";
-import { ReactNode, useEffect, useRef, useState } from "react";
-import { Platform } from "react-native";
+import {
+  CameraType,
+  useCameraPermissions,
+  CameraView,
+  CameraRatio,
+} from "expo-camera";
+import React, { ReactNode, useEffect, useRef, useState } from "react";
+
+// Fallback default
+const defaultRatio = "16:9";
 
 export const UnstyledCamera = ({
   children,
   debug,
 }: {
-  children?: (props: {
-    switchCamera?: () => unknown;
-    // takePicture: () => unknown;
-    // startRecording: () => unknown;
-    // stopRecording: () => unknown;
-    // startPlaying: (mediaUri: string) => unknown;
-    // stopPlaying: () => unknown;
-    // isRecording: boolean;
-    // isPlaying: boolean;
-    // currentMediaUri: string | undefined;
-    // mediaUri: string[];
-  }) => ReactNode;
+  children?: (props: { switchCamera?: () => unknown }) => ReactNode;
   debug?: boolean;
-}): JSX.Element | null => {
-  const [permission, requestPermission] = Camera.useCameraPermissions();
-  const camera = useRef<Camera>(null);
+}): React.JSX.Element | null => {
+  const [permission, requestPermission] = useCameraPermissions();
+  const cameraRef = useRef<CameraView>(null);
   const [ready, setReady] = useState(false);
-  const [type, setType] = useState<CameraType>(CameraType.back);
-  const [types, setTypes] = useState<CameraType[]>([
-    CameraType.back,
-    CameraType.front,
-  ]);
-  const [ratios, setRatios] = useState<string[] | undefined>();
-
-  useEffect(
-    () => () => {
-      debug && console.log("UnstyledCamera1: Unmounted");
-    },
-    []
-  );
+  const [type, setType] = useState<CameraType>("back");
+  const [types, setTypes] = useState<CameraType[]>(["back", "front"]);
 
   useEffect(() => {
-    if (permission?.granted === undefined) requestPermission();
+    return () => {
+      debug && console.log("UnstyledCamera1: Unmounted");
+    };
+  }, []);
+
+  useEffect(() => {
+    if (permission?.granted === undefined) {
+      requestPermission();
+    }
   }, [permission]);
 
   useEffect(() => {
-    if (camera.current && ready) {
-      if (Platform.OS !== "web")
-        camera.current.getSupportedRatiosAsync().then(setRatios);
+    const fetchCameraData = async () => {
+      if (!ready || !cameraRef.current) return;
 
-      if (Platform.OS === "web")
-        Camera.getAvailableCameraTypesAsync().then(setTypes);
-    }
-  }, [camera.current, ready]);
+      // Set static types (front/back)
+      setTypes(["back", "front"]);
+    };
+
+    fetchCameraData();
+  }, [ready]);
 
   const switchCamera =
     types.length < 2
@@ -68,26 +58,25 @@ export const UnstyledCamera = ({
             return nextType;
           });
 
-  const ratio = ratios && bestAspectRatio(ratios);
+  const ratio = bestAspectRatio([defaultRatio]) as CameraRatio;
   const aspectRatio = ratio ? calcAspectRatio(ratio) : undefined;
 
   return permission?.granted ? (
-    <Camera
-      ref={camera}
+    <CameraView
       style={{
         aspectRatio,
       }}
-      type={type}
+      facing={type}
       ratio={ratio}
       onCameraReady={() => setReady(true)}
     >
       {children?.({ switchCamera })}
-    </Camera>
+    </CameraView>
   ) : null;
 };
 
-const bestAspectRatio = (ratios: string[]) =>
+const bestAspectRatio = (ratios: CameraRatio[]) =>
   prioritySelect(["16:9", "1:2", "4:3", "1:1"])(ratios);
 
-const calcAspectRatio = (ratio: string, [w, h] = ratio?.split(":")) =>
+const calcAspectRatio = (ratio: CameraRatio, [w, h] = ratio?.split(":")) =>
   h && w ? +h / +w : undefined;
