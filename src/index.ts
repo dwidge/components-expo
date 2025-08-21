@@ -20,7 +20,6 @@ export * from "./StyledDate.js";
 export * from "./StyledHeader.js";
 export * from "./StyledMediaPicker.js";
 export * from "./StyledNotFound.js";
-export * from "./UnstyledCamera.js";
 export * from "./UnstyledMediaPicker.js";
 export * from "./UnstyledMic.js";
 export * from "./useAxios.js";
