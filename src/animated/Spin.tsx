@@ -3,14 +3,14 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 import React, { PropsWithChildren } from "react";
-import {
-  useSharedValue,
+import Animated, {
+  Easing,
+  cancelAnimation,
   useAnimatedStyle,
+  useSharedValue,
   withRepeat,
   withTiming,
-  Easing,
 } from "react-native-reanimated";
-import Animated from "react-native-reanimated";
 
 export const Spin = ({
   spinning,
@@ -32,9 +32,10 @@ export const Spin = ({
           easing: Easing.linear,
         }),
         -1,
-        false
+        false,
       );
     } else {
+      cancelAnimation(rotation);
       rotation.value = 0;
     }
   }, [spinning, rotation]);
