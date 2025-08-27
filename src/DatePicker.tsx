@@ -32,8 +32,8 @@ export const DatePicker = ({
   style,
 }: DatePickerProps) => {
   const [modalVisible, setModalVisible] = useState(false);
-  const [date, setDate] = useState<Date | null>(dateValue ?? null); // Initialize with null if dateValue is undefined
-  const [isPickerVisible, setIsPickerVisible] = useState(false); // For native picker visibility
+  const [date, setDate] = useState<Date | null>(dateValue ?? null);
+  const [isPickerVisible, setIsPickerVisible] = useState(false);
 
   const onValueChange = (newDate: Date | null) => {
     if (setDateValue) {
@@ -42,7 +42,7 @@ export const DatePicker = ({
   };
 
   const onChangeNative = (event: any, selectedDate: Date | undefined) => {
-    setIsPickerVisible(Platform.OS === "ios"); // For iOS, keep picker open until "Done"
+    setIsPickerVisible(Platform.OS === "ios");
     if (selectedDate) {
       setDate(selectedDate);
     }
@@ -61,18 +61,18 @@ export const DatePicker = ({
       onValueChange(date);
     }
     setModalVisible(false);
-    hidePicker(); // Hide native picker if it's open
+    hidePicker();
   };
 
   const cancelDate = () => {
     setModalVisible(false);
-    setDate(dateValue ?? null); // Revert to original value, handle undefined case
-    hidePicker(); // Hide native picker if it's open
+    setDate(dateValue ?? null);
+    hidePicker();
   };
 
   const openModal = () => {
     setModalVisible(true);
-    setDate(dateValue || new Date()); // Initialize date for picker, default to today
+    setDate(dateValue || new Date());
   };
 
   const handleWebInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -156,7 +156,7 @@ export const TimePicker = ({
   style,
 }: TimePickerProps) => {
   const [modalVisible, setModalVisible] = useState(false);
-  const [time, setTime] = useState<Date | null>(timeValue ?? null); // Initialize with null if timeValue is undefined
+  const [time, setTime] = useState<Date | null>(timeValue ?? null);
   const [isPickerVisible, setIsPickerVisible] = useState(false);
 
   const onValueChange = (newTime: Date | null) => {
@@ -188,19 +188,19 @@ export const TimePicker = ({
 
   const cancelTime = () => {
     setModalVisible(false);
-    setTime(timeValue ?? null); // Revert to original value, handle undefined case
+    setTime(timeValue ?? null);
     hidePicker();
   };
 
   const openModal = () => {
     setModalVisible(true);
-    setTime(timeValue || new Date()); // Initialize time, default to now
+    setTime(timeValue || new Date());
   };
 
   const handleWebInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const textValue = event.target.value;
     if (textValue) {
-      const parsedTime = parseTimeFromInput(textValue, timeValue ?? null); // Pass existing date if available
+      const parsedTime = parseTimeFromInput(textValue, timeValue ?? null);
       setTime(parsedTime);
     } else {
       setTime(null);
@@ -282,9 +282,7 @@ export const DateRangePicker = ({
   const [internalDateRange, setInternalDateRange] = useState<{
     startDate: Date | null;
     endDate: Date | null;
-  }>(
-    dateRangeValue ?? { startDate: null, endDate: null }, // Initialize with nulls if dateRangeValue is undefined
-  );
+  }>(dateRangeValue ?? { startDate: null, endDate: null });
 
   const setInternalStartDate: Dispatch<SetStateAction<Date | null>> = (
     newStartDate,
@@ -321,7 +319,7 @@ export const DateRangePicker = ({
     setModalVisible(true);
     setInternalDateRange(
       dateRangeValue || { startDate: new Date(), endDate: new Date() },
-    ); // Initialize with current props or today
+    );
   };
 
   const getDisplayValue = () => {
@@ -370,17 +368,15 @@ export const DateRangePicker = ({
   );
 };
 
-// Helper functions for date formatting and parsing (reused from previous)
-
 export const formatDateDisplay = (date: Date): string => {
-  return date.toLocaleDateString(); // e.g., "MM/DD/YYYY" or locale specific
+  return date.toLocaleDateString();
 };
 
 const formatDateForInput = (date: Date): string => {
   const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0"); // Months are 0-indexed
+  const month = String(date.getMonth() + 1).padStart(2, "0");
   const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`; // YYYY-MM-DD format for input type="date"
+  return `${year}-${month}-${day}`;
 };
 
 const parseDateFromInput = (text: string): Date | null => {
@@ -390,20 +386,20 @@ const parseDateFromInput = (text: string): Date | null => {
     const month = parseInt(parts[1], 10);
     const day = parseInt(parts[2], 10);
     if (!isNaN(year) && !isNaN(month) && !isNaN(day)) {
-      return new Date(year, month - 1, day); // Month is 0-indexed in Date constructor
+      return new Date(year, month - 1, day);
     }
   }
-  return null; // Invalid format
+  return null;
 };
 
 export const formatTimeDisplay = (date: Date): string => {
-  return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }); // e.g., "HH:MM AM/PM" or 24-hour format
+  return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 };
 
 const formatTimeForInput = (date: Date): string => {
   const hours = String(date.getHours()).padStart(2, "0");
   const minutes = String(date.getMinutes()).padStart(2, "0");
-  return `${hours}:${minutes}`; // HH:MM format for input type="time"
+  return `${hours}:${minutes}`;
 };
 
 const parseTimeFromInput = (
@@ -423,7 +419,7 @@ const parseTimeFromInput = (
       minutes >= 0 &&
       minutes <= 59
     ) {
-      let newDate = currentDate ? new Date(currentDate) : new Date(); // Use current date or today as base
+      let newDate = currentDate ? new Date(currentDate) : new Date();
       newDate.setHours(hours);
       newDate.setMinutes(minutes);
       newDate.setSeconds(0);
@@ -431,5 +427,5 @@ const parseTimeFromInput = (
       return newDate;
     }
   }
-  return null; // Invalid format
+  return null;
 };
