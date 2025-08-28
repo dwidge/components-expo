@@ -22,6 +22,7 @@ export * from "./StyledCronText.js";
 export * from "./StyledDate.js";
 export * from "./StyledHeader.js";
 export * from "./StyledMediaPicker.js";
+export * from "./StyledNavButton.js";
 export * from "./StyledNotFound.js";
 export * from "./UnstyledMediaPicker.js";
 export * from "./UnstyledMic.js";
