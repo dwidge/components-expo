@@ -32,7 +32,7 @@
     "@dwidge/crud-api-react": "^0.0.37",
     "@dwidge/utils-js": "^0.0.22",
     "@react-native-community/datetimepicker": "^8.4.1",
-    "@react-native-picker/picker": "2.11.1",
+    "@react-native-picker/picker": "^2.11.1",
     "@rneui/themed": "^4.0.0-rc.8",
     "assert": "^2.1.0",
     "axios": "^1.7.7",
@@ -46,7 +46,7 @@
     "expo-image-picker": "~16.1.4",
     "expo-linking": "~7.1.7",
     "expo-location": "^18.1.6",
-    "expo-router": "~5.1.4",
+    "expo-router": "~5.1.5",
     "expo-sharing": "~13.1.5",
     "react": "^19.0.0",
     "react-native": "^0.79.5",
@@ -57,11 +57,11 @@
   },
   "devDependencies": {
     "@types/assert": "^1.5.10",
-    "@types/node": "^22.7.5",
+    "@types/node": "^22.15.21",
     "expect": "^29.7.0",
     "ncp": "^2.0.0",
     "rimraf": "^6.0.1",
-    "typescript": "^5.7.3"
+    "typescript": "^5.8.3"
   },
   "publishConfig": {
     "access": "public"
