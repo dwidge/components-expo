@@ -43,7 +43,7 @@ interface SignaturePadProps {
  * It allows users to draw signatures and save them as data URIs.
  *
  * @param {SignaturePadProps} props - The component props.
- * @returns {JSX.Element} The SignaturePad component.
+ * @returns {React.JSX.Element} The SignaturePad component.
  *
  * @example
  * // Usage with state management:

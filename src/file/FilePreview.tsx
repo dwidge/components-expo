@@ -20,7 +20,7 @@ export const FilePreview = ({
   dataUri = undefined as string | null | undefined,
   dataUriCache: [dataUriCache, setDataUriCache] = useDataUriCache(dataUri),
   name = undefined as string | null | undefined,
-}): JSX.Element =>
+}): React.JSX.Element =>
   dataUriCache === "" ? (
     <CenterView overflowHidden>
       <StyledFontAwesome name={"warning"} />

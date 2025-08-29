@@ -909,7 +909,7 @@ const doodlePadHTML = `
  * within a modal that can be maximized to full screen or displayed at a 1:1 resolution.
  *
  * @param {DoodlePadProps} props - The properties for the DoodlePad component, defining its behavior and appearance.
- * @returns {JSX.Element} The DoodlePad component instance.
+ * @returns {React.JSX.Element} The DoodlePad component instance.
  *
  * @example
  * ```tsx

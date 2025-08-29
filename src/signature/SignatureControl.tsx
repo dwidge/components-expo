@@ -4,16 +4,16 @@
 
 import { StyledButton, StyledLoader, StyledView } from "@dwidge/components-rnw";
 import { ErrorFallback } from "@dwidge/fallback-rnw";
+import { asDataUri, useFileUri1 } from "@dwidge/file-cache-expo";
 import { useOptionalState } from "@dwidge/hooks-react";
 import { useContext } from "react";
 import ErrorBoundary from "react-native-error-boundary";
 import { FileApiContext } from "../file";
 import { StyledDate } from "../StyledDate";
+import { useAxios } from "../useAxios";
 import { optional } from "../utils/optional";
 import { SignaturePad } from "./SignaturePad";
 import { SignatureComponent, SignatureData } from "./SignatureType";
-import { asDataUri, useFileUri1 } from "@dwidge/file-cache-expo";
-import { useAxios } from "../useAxios";
 
 export const SignatureControl: SignatureComponent = (props) => (
   <SignatureControlInternal {...props} />
@@ -69,7 +69,8 @@ const SignatureControlInternal = ({
         (() =>
           setFile({}).then(
             (keyPrev, keyNext = keyPrev) => (
-              keyNext && setData(keyNext), keyNext
+              keyNext && setData(keyNext),
+              keyNext
             ),
           ))
       }
@@ -95,7 +96,7 @@ const SignatureEdit = ({
   onPressDelete = optional(async () => {
     console.log("onPressDelete1");
   }),
-}): JSX.Element => (
+}): React.JSX.Element => (
   <StyledView flex card column>
     {file === undefined ? (
       <StyledLoader />

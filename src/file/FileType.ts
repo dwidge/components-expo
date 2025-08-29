@@ -2,7 +2,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-import { FileMeta, FileRecord } from "@dwidge/file-cache-expo";
+import { FileRecord } from "@dwidge/file-cache-expo";
 import { AsyncState, OptionalState } from "@dwidge/hooks-react";
 
 export type FileData = {

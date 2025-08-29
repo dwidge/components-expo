@@ -25,7 +25,7 @@ interface DatePickerProps {
  * DatePicker Component for Expo web/native using native picker and web input with OptionalState.
  *
  * @param {DatePickerProps} props - The component props.
- * @returns {JSX.Element} The DatePicker component.
+ * @returns {React.JSX.Element} The DatePicker component.
  */
 export const DatePicker = ({
   value: [dateValue, setDateValue],
@@ -149,7 +149,7 @@ interface TimePickerProps {
  * TimePicker Component for Expo web/native using native picker and web input with OptionalState.
  *
  * @param {TimePickerProps} props - The component props.
- * @returns {JSX.Element} The TimePicker component.
+ * @returns {React.JSX.Element} The TimePicker component.
  */
 export const TimePicker = ({
   value: [timeValue, setTimeValue],
@@ -272,7 +272,7 @@ interface DateRangePickerProps {
  * DateRangePicker Component for Expo web/native with OptionalState.
  *
  * @param {DateRangePickerProps} props - The component props.
- * @returns {JSX.Element} The DateRangePicker component.
+ * @returns {React.JSX.Element} The DateRangePicker component.
  */
 export const DateRangePicker = ({
   value: [dateRangeValue, setDateRangeValue],

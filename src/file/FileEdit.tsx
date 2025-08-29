@@ -82,7 +82,7 @@ export const FileEdit = ({
   onPressPreview = optional(async () => {
     setModalVisible(true);
   }),
-}): JSX.Element => (
+}): React.JSX.Element => (
   <StyledView flex card column>
     {file === undefined ? (
       <StyledLoader />

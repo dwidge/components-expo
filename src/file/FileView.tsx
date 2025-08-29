@@ -3,15 +3,15 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 import { StyledLoader, StyledView } from "@dwidge/components-rnw";
-import { FilePreview } from "./FilePreview.js";
-import { UseFile2 } from "./FileType.js";
 import { useFileUri1 } from "@dwidge/file-cache-expo";
 import { useAxios } from "../useAxios.js";
+import { FilePreview } from "./FilePreview.js";
+import { UseFile2 } from "./FileType.js";
 
 export const FileView = ({
   file: [file, setFile] = [undefined, undefined] as UseFile2,
   fileUri: [fileUri] = useFileUri1([file, setFile], useAxios()),
-}): JSX.Element =>
+}): React.JSX.Element =>
   file ? (
     <StyledView center middle mediumSquare outline overflowHidden>
       <FilePreview dataUri={fileUri} />
