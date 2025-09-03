@@ -4,8 +4,8 @@ import { StyleSheet } from "react-native";
 import { StyledButton, StyledText, StyledView } from "@dwidge/components-rnw";
 import { AsyncState } from "@dwidge/hooks-react";
 import { Picker } from "@react-native-picker/picker";
-import { DatePicker, TimePicker } from "./DatePicker";
-import { StyledCronText } from "./StyledCronText";
+import { DatePicker, TimePicker } from "./DatePicker.js";
+import { StyledCronText } from "./StyledCronText.js";
 
 type Frequency = "daily" | "weekly" | "monthly" | "yearly" | "custom";
 
