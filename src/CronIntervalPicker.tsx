@@ -198,6 +198,30 @@ export const CronIntervalPicker: React.FC<CronIntervalPickerProps> = ({
     [emitNewCron, derivedTime],
   );
 
+  const handleSetTimeTo3MinsFromNow = useCallback(() => {
+    const now = new Date();
+    now.setMinutes(now.getMinutes() + 3);
+    handleTimeChange(now);
+  }, [handleTimeChange]);
+
+  const handleSetTimeTo6am = useCallback(() => {
+    const newTime = new Date();
+    newTime.setHours(6, 0, 0, 0);
+    handleTimeChange(newTime);
+  }, [handleTimeChange]);
+
+  const handleSetTimeTo9am = useCallback(() => {
+    const newTime = new Date();
+    newTime.setHours(9, 0, 0, 0);
+    handleTimeChange(newTime);
+  }, [handleTimeChange]);
+
+  const handleSetTimeToNoon = useCallback(() => {
+    const newTime = new Date();
+    newTime.setHours(12, 0, 0, 0);
+    handleTimeChange(newTime);
+  }, [handleTimeChange]);
+
   const handleDayOfMonthChange = useCallback(
     (newValue: SetStateAction<Date | null>) => {
       const resolvedDate =
@@ -270,9 +294,36 @@ export const CronIntervalPicker: React.FC<CronIntervalPickerProps> = ({
         derivedFrequency === "yearly") && (
         <StyledView style={styles.section}>
           <StyledText style={styles.label}>Time:</StyledText>
-          <TimePicker
-            value={[derivedTime, isReadonly ? undefined : handleTimeChange]}
-          />
+          <StyledView row middle gap>
+            <TimePicker
+              style={{ flex: 1 }}
+              value={[derivedTime, isReadonly ? undefined : handleTimeChange]}
+            />
+            <StyledButton
+              onPress={isReadonly ? undefined : handleSetTimeTo3MinsFromNow}
+              disabled={isReadonly}
+            >
+              Now + 3 min
+            </StyledButton>
+            <StyledButton
+              onPress={isReadonly ? undefined : handleSetTimeTo6am}
+              disabled={isReadonly}
+            >
+              6 am
+            </StyledButton>
+            <StyledButton
+              onPress={isReadonly ? undefined : handleSetTimeTo9am}
+              disabled={isReadonly}
+            >
+              9 am
+            </StyledButton>
+            <StyledButton
+              onPress={isReadonly ? undefined : handleSetTimeToNoon}
+              disabled={isReadonly}
+            >
+              Noon
+            </StyledButton>
+          </StyledView>
         </StyledView>
       )}
 
