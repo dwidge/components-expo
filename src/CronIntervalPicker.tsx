@@ -292,13 +292,15 @@ export const CronIntervalPicker: React.FC<CronIntervalPickerProps> = ({
         derivedFrequency === "weekly" ||
         derivedFrequency === "monthly" ||
         derivedFrequency === "yearly") && (
-        <StyledView style={styles.section}>
+        <StyledView style={styles.section} sgap>
           <StyledText style={styles.label}>Time:</StyledText>
-          <StyledView row middle gap>
+          <StyledView row middle gap wrap>
             <TimePicker
               style={{ flex: 1 }}
               value={[derivedTime, isReadonly ? undefined : handleTimeChange]}
             />
+          </StyledView>
+          <StyledView row middle gap wrap>
             <StyledButton
               onPress={isReadonly ? undefined : handleSetTimeTo3MinsFromNow}
               disabled={isReadonly}
@@ -330,7 +332,7 @@ export const CronIntervalPicker: React.FC<CronIntervalPickerProps> = ({
       {derivedFrequency === "weekly" && (
         <StyledView style={styles.section}>
           <StyledText style={styles.label}>Days of Week:</StyledText>
-          <StyledView style={styles.daysContainer}>
+          <StyledView style={styles.daysContainer} wrap>
             {days.map((day, index) => (
               <StyledButton
                 key={day}
