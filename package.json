@@ -1,6 +1,6 @@
 {
   "name": "@dwidge/components-expo",
-  "version": "0.0.47",
+  "version": "0.0.48",
   "description": "A collection of Expo components and utilities.",
   "repository": "github:dwidge/components-expo",
   "main": "./dist/cjs/index.js",
@@ -22,14 +22,14 @@
     "test": "node --enable-source-maps --test --test-name-pattern"
   },
   "peerDependencies": {
-    "@dwidge/components-rnw": "^0.0.32",
+    "@dwidge/components-rnw": "^0.0.33",
     "@dwidge/fallback-rnw": "^0.0.7",
-    "@dwidge/file-cache-expo": "^0.0.25",
-    "@dwidge/hooks-expo": "^0.0.37",
-    "@dwidge/hooks-react": "^0.0.26",
+    "@dwidge/file-cache-expo": "^0.0.26",
+    "@dwidge/hooks-expo": "^0.0.38",
+    "@dwidge/hooks-react": "^0.0.27",
     "@dwidge/react-native-web-webview": "^0.0.7",
     "@dwidge/trace-js": "^0.0.12",
-    "@dwidge/crud-api-react": "^0.0.39",
+    "@dwidge/crud-api-react": "^0.0.40",
     "@dwidge/utils-js": "^0.0.23",
     "@react-native-community/datetimepicker": "^8.4.1",
     "@react-native-picker/picker": "^2.11.1",
