@@ -14,7 +14,7 @@ export const useCronNextRun = (
       return { nextRunDate: null, error: null };
     }
     try {
-      const interval = cronParser.parseExpression(cron);
+      const interval = cronParser.parse(cron);
       const nextDate = interval.next().toDate();
       return { nextRunDate: nextDate, error: null };
     } catch (error) {
