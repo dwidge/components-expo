@@ -28,6 +28,7 @@ export const makeDatabaseTestScreen = <T extends ApiRecord & ApiItem3>({
   useNavAction = () => (filter: Partial<T>) => {},
   useNavFilter = () => ({}) as ApiFilterObject<T>,
   randItem = () => ({}) as Partial<T>,
+  rootUrl = ".",
 } = {}) => {
   const DeleteRestoreButton = ({ api = useApi(), item = api.useItem() }) => {
     const deleteItem = api.useDeleteItem();
@@ -51,7 +52,7 @@ export const makeDatabaseTestScreen = <T extends ApiRecord & ApiItem3>({
       <StyledHeader title={title} />
       <StyledView pad gap flex>
         <StyledText l>{useApi().useCount()}</StyledText>
-        <ListView />
+        <ListView rootUrl={rootUrl} />
       </StyledView>
     </ScreenView>
   );
@@ -67,7 +68,7 @@ export const makeDatabaseTestScreen = <T extends ApiRecord & ApiItem3>({
     </ScreenView>
   );
 
-  const ListView = () => {
+  const ListView = ({ rootUrl = "." }: { rootUrl?: string }) => {
     const api = useApi();
     const onPressItem = useNavAction();
     const createItem = api.useCreateItem();
@@ -84,7 +85,10 @@ export const makeDatabaseTestScreen = <T extends ApiRecord & ApiItem3>({
     const toggleDeleted = useCallback(
       (newValue: "Existing" | "Deleted") => {
         const newShowDeleted = newValue === "Deleted";
-        nav(".", newShowDeleted ? { deleted: "true" } : { deleted: undefined });
+        nav(
+          rootUrl,
+          newShowDeleted ? { deleted: "true" } : { deleted: undefined },
+        );
       },
       [nav],
     );
