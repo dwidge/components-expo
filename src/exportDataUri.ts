@@ -5,4 +5,5 @@ export const exportDataUri = async (
   dataUri: string,
   name = getMimeTypeFromDataUri(asDataUri(dataUri))?.replace("/", ".") ??
     "file",
-): Promise<void> => exportUri(dataUri, name);
+  download = true,
+): Promise<void> => exportUri(dataUri, name, download);
