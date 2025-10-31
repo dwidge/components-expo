@@ -2,11 +2,11 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
+import { downloadUri } from "@dwidge/expo-export-uri";
 import * as ImagePicker from "expo-image-picker";
-import { exportUri } from "./exportUri";
 
 export const exportMedia = (media: ImagePicker.ImagePickerAsset) =>
-  exportUri(
+  downloadUri(
     media.uri,
-    media.mimeType?.replace("/", ".") ?? media.type ?? "file"
+    media.mimeType?.replace("/", ".") ?? media.type ?? "file",
   );

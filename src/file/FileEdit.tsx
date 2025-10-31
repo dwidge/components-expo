@@ -8,6 +8,7 @@ import {
   StyledText,
   StyledView,
 } from "@dwidge/components-rnw";
+import { downloadUri } from "@dwidge/expo-export-uri";
 import {
   asDataUri,
   getDataUriFromDoc,
@@ -16,7 +17,6 @@ import {
 } from "@dwidge/file-cache-expo";
 import { useState } from "react";
 import { Platform, TouchableOpacity } from "react-native";
-import { exportUri } from "../exportUri.js";
 import { getMediaFromCamera } from "../getMediaFromLibrary.js";
 import { pickDocument } from "../pickDocument.js";
 import { StyledDate } from "../StyledDate.js";
@@ -72,7 +72,7 @@ export const FileEdit = ({
     : undefined,
   onPressSave = fileUri
     ? () =>
-        exportUri(
+        downloadUri(
           fileUri,
           getMimeTypeFromDataUri(asDataUri(fileUri))?.replace("/", ".") ??
             "file",

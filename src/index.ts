@@ -6,7 +6,6 @@ export * from "./DatePicker.js";
 export * from "./DoodlePad/index.js";
 export * from "./exportDataUri.js";
 export * from "./exportMedia.js";
-export * from "./exportUri.js";
 export * from "./file/index.js";
 export * from "./FileCacheView.js";
 export * from "./getMediaFromLibrary.js";

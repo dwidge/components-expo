@@ -23,6 +23,7 @@
   },
   "peerDependencies": {
     "@dwidge/components-rnw": "^0.0.37",
+    "@dwidge/expo-export-uri": "^0.0.1",
     "@dwidge/fallback-rnw": "^0.0.7",
     "@dwidge/file-cache-expo": "^0.0.32",
     "@dwidge/hooks-expo": "^0.0.43",
